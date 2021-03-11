@@ -1,263 +1,83 @@
-# TorToolkit Telegram
-So basically Tortoolkit is aimed to be the most versatile torrent leecher and Youtube-DL bot for telegram. This bot is highly customizable and to customize this bot you don't need to restart the bot every time. 
-The bot gets started with minimum variables and others can be set as and when needed using the /settings.
+<p align="center">
+    <a href="https://github.com/UsergeTeam/Userge">
+        <img src="resources/userge.png" alt="Userge">
+    </a>
+    <br>
+    <b>Pluggable Telegram UserBot</b>
+    <br>
+    <a href="https://github.com/UsergeTeam/Userge#documentation-">Documentation</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#inspiration-">Inspiration</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#features-">Features</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#example-plugin-">Example</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#project-credits-">Project Credits</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#copyright--license-">Copyright & License</a>
+</p>
 
-Table of Content
-- [FEATURES](#features)
-- [TEST THE BOT (DEMO)](https://t.me/TorToolKit)
-- [DEPLOYMENT METHODS](#deployment)
-  - [Heroku](##heroku)
-  - [Zeet](##zeet)
-  - [VPS DEPLOYMENT USING DOCKER](#vps-deployment-docker)
-  - [VPS DEPLOYMENT WITHOUT DOCKER](#vps-deployment-without-docker)
+# Userge 🔥
 
+[![Build Status](https://travis-ci.com/UsergeTeam/Userge.svg?branch=alpha)](https://travis-ci.com/UsergeTeam/Userge)
+![Python Version](https://img.shields.io/badge/python-3.8/3.9-lightgrey)
+![Release](https://img.shields.io/github/v/release/UsergeTeam/Userge)
+![Stars](https://img.shields.io/github/stars/UsergeTeam/Userge)
+![Forks](https://img.shields.io/github/forks/UsergeTeam/Userge)
+![Issues Open](https://img.shields.io/github/issues/UsergeTeam/Userge)
+![Issues Closed](https://img.shields.io/github/issues-closed/UsergeTeam/Userge)
+![PRs Open](https://img.shields.io/github/issues-pr/UsergeTeam/Userge)
+![PRs Closed](https://img.shields.io/github/issues-pr-closed/UsergeTeam/Userge)
+![Contributors](https://img.shields.io/github/contributors/UsergeTeam/Userge)
+![Repo Size](https://img.shields.io/github/repo-size/UsergeTeam/Userge)
+![License](https://img.shields.io/github/license/UsergeTeam/Userge)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/UsergeTeam/Userge)
+[![Plugins Repo!](https://img.shields.io/badge/Plugins%20Repo-!-orange)](https://github.com/UsergeTeam/Userge-Plugins)
+[![Join Channel!](https://img.shields.io/badge/Join%20Channel-!-red)](https://t.me/theUserge)
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/UsergeTeam/Userge/?ref=repository-badge)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/UsergeTeam/Userge)
 
-# Features
-Following are some awesome features offered by this bot:-
-- Using the best torrent client to deal with torrent : [qBittorrent](https://github.com/qbittorrent/qBittorrent)
-- You can choose which files you want to download from the torrent.
-- A glorious settings menu from you can control the bot.
-- If the bot is in the group, the users have their own settings like:
-  - Permanent thumbnail support.
-  - Users can choose if they want a file or video.
-  - Load in their own rclone config so that the torrent/direct link is uploaded to their drive. (Work in Progress)
-- Extraction of ZIP, TAR, ISO, RAR wih and without password. If you chose to extarct the archive and you enter the password wrong it will prompt you to enter the password upto 3 times after that zip will be uploaded as it is.
-- G Drive Index support.
-- Admins can put hard limits on the max torrent size and max youtube playlist size.
-- Aria2 for direct links download.
-- Upload to gdrive by using RCLONE.
-  - You can load multiple drives in the conf and can switch on fly using the settings.
-- Sorted YTDL download menu.
-- Zip and upload also available.
-- Get the server status.
-- InstaDL support
-- Browse the settings menu and try stuff. ;)
+> **Userge** is a Powerful , _Pluggable_ Telegram UserBot written in _Python_ using [Pyrogram](https://github.com/pyrogram/pyrogram).
 
-# Deployment
+## Documentation 📘
 
-## ***Heroku***
-### For Heroku users New repo will come soon (This repo will not work on heroku)
-[![Deploy](https://telegra.ph/file/e7d224c45cf1d106a28fa.png)](https://telegra.ph/Heroku-TorToolkit-01-18)
+> you can find full documentation [**here**](https://theuserge.github.io)
 
-## ***Zeet***
-According to me, this platform provides resources that are enough for a genuine user and by default prevents Abuse:
-Click the logo to see the video guide to see how to deploy. The web is not yet available but soon will be available on Zeet.
+## Inspiration 😇
 
-[![Deploy](https://telegra.ph/file/a81a05cc874e8636ddb86.png)](https://youtu.be/WWi9JWDzXSw)
+> This project is inspired by the following projects :)
 
-## ***VPS Deployment Docker***
-ExecVarsSample.py location:- `tortoolkit/consts/ExecVarsSample.py`
+* [tg_userbot](https://github.com/watzon/tg_userbot) ( heavily ) 🤗
+* [PyroGramBot](https://github.com/SpEcHiDe/PyroGramBot)
+* [Telegram-Paperplane](https://github.com/RaphielGang/Telegram-Paperplane)
+* [UniBorg](https://github.com/SpEcHiDe/UniBorg)
 
-### [Deploy with Docker Video](https://youtu.be/c8_TU1sPK08)
+> Special Thanks to all of you !!!.
 
-Steps:-
-1. You should install docker first :- [How to Install Docker](https://docs.docker.com/engine/install/)
-
-2. Clone the repo and edit ExecVarsSample.py 
-   1. While editing Change 
-      1. `API_HASH`
-      2. `API_ID`
-      3. `BOT_TOKEN`
-      4. `ALD_USR`
-      5. `BASE_URL_OF_BOT`
-      6. `Uncomment the below DB_URI and comment out the above DB_URI`
-      7. Also if the given procedure dosent work then set  `IS_VPS` to True and if you want to change the port when IS_VPS is true then change `SERVPORT` to your desired port number. (Note this should be used as backup)
-
-3. After that execute these commands in root of the repo where tortoolkit folder is located.
-    1. `apt install docker-compose`
-    2. `docker-compose up`
-
-4. If you edit a file like ExecVarsSample.py in future just run below commands
-    1. `docker-compose build`
-    2. `docker-compose up`
-
-### ***VPS Deployment Without Docker***
-### [Demo video for Deployment Without Docker](https://youtu.be/HYjG4-VfxXs)
-
-1. Run the following commands. (Following commands can be used to setup the vps from scratch)
-   
-    1. `git clone https://github.com/yash-dk/TorToolkit-Telegram.git`
-    2. `sudo apt update`
-    3. `sudo apt install -y python3.8`
-    4. `sudo apt install -y python3-venv`
-    5. `python3 -m venv venv`
-    6. `source venv/bin/activate`
-    7. `cd TorToolkit-Telegram`
-    8. `pip install -r requirements.txt`
-	9. `sudo apt install -y postgresql postgresql-contrib`
-	10. `apt -qq install -y curl git wget python3 python3-pip aria2 ffmpeg mediainfo unzip p7zip-full p7zip-rar`
-	11. `curl https://rclone.org/install.sh | bash`
-	12. `apt-get install -y software-properties-common`
-	13. `apt-get -y update`
-	14. `add-apt-repository -y ppa:qbittorrent-team/qbittorrent-stable`
-	15. `apt install -y qbittorrent-nox`
-2. After that setup the database:- Remember the 'your-pass' that you enter below
-    1. `sudo -u postgres bash`
-    2. `createdb tortk`
-    3. `psql`
-    4. `ALTER USER postgres with password 'your-pass';`
-    5. `exit`
-    6. `exit`
-
-3. After that setup the Variables.
-
-	Assuming that you are in the directory where you clonned the repo
-	   
-    1. `cd TorToolkit-Telegram/tortoolkit/consts`
-	2. `nano ExecVarsSample.py`
-    3. Change the following:-
-       1.  `API_HASH`
-       2.  `API_ID`
-       3.  `BOT_TOKEN`
-       4.  `ALD_USR`
-       5.  `BASE_URL_OF_BOT`
-       6.  Change `DB_URI = "dbname=tortk user=postgres password=your-pass host=127.0.0.1 port=5432"`
-
-           Enter the password in the above string.
-       7.  After that run (You can use any port for the web interface here i am using 80).
-           Each time before starting the bot export the port Number
-
-           `export PORT=80`
-
-4. And finally run this in clonned folder.
-    1. `chmod 777 start.sh`
-    2. `./start.sh`
-
-## Variables
-- `IS_VPS`
-    - Values :- `False`/`True`
-    - Default Value :- `False`
-    - Use :- Only set to True if you get errors regarding web server in VPS deployment. Only use as backup.
-
-### ***Compulsory Vars***
-
-- `API_HASH`
-  - Values :- Valid API HASH obtained from Telegram.
-  - Default Value :- `""`
-  - Use :- To connect to Telegram.
-
-- `API_ID`
-  - Values :- Valid API ID obtained from Telegram.
-  - Default Value :- `0`
-  - Use :- To connect to Telegram.
-
-- `BOT_TOKEN`
-  - Values :- Valid BOT TOKEN Obtained from Botfather.
-  - Default Value :- `""`
-  - Use :- To connect to Telegram as BOT.
-
-- `BASE_URL_OF_BOT`
-  - Values :- Valid BASE URL of where the bot is deploy. Ip/domain of your bot like "http://myip" or if oy have chosen other port then 80 then "http://myip:port". No slash at the end.
-  - Default Value :- `""`
-  - Use :- This is used for file selection of the torrent.
-
-- `ALD_USR`
-  - Values :- It is a list of IDs of all the allowed groups and useres who can use this bot in private. 
-    - To supply multiple IDs in ExecVarsSample.py seperate by comma ','. 
-    - To supply multiple IDs from Environemnt variable seperate by spaces.
-  - Default Value :- `[]` 
-  - Use :- Users and groups with ids here can use the bot.
-
-- `DB_URI` = 
-  - Values :- Postgres database URL. Just replace your credentials from below. OR directly Paste the URI you obtained from a database hosting or somewhere else.
-  - Default Value :- `dbname=tortk user=postgres password=your-pass host=127.0.0.1 port=5432`
-  - Use :- Used to connect to DB. DB is used for many stuff in this bot. 
-
-### ***Optional Vars***
-- `GD_INDEX_URL`
-  - Values :- Base URL of the index that you are using. (Now that you should include the directory also in URL if you have set `RCLONE_BASE_DIR`). (Dosen't matter if a slash is at the end or not)
-  - Default Value :- `False`
-  - Use :- Provides an addition Index link for Google Drive Upload.
-
-- `EDIT_SLEEP_SECS`
-  - Values :- Seconds to Sleep before edits. Recommended is 40. (If you are using the bot for your own you can try 10 if you get FloodWait Error in LOGS then increase the value) [Can be set from settings menu]
-  - Default Value :- `40`
-  - Use :- The bot will update the progress regulary after these number of seconds.
-
-- `TG_UP_LIMIT`
-  - Values :- Telegram Upload limit in bytes. (you can set max `2147483648` which is ~2GB) [Can be set from settings menu]
-  - Default Value :- `1700000000`
-  - Use :- The bot will use this value to automatically slice the file bigger that this size into small parts to upload to Telegram.
-
-- `FORCE_DOCUMENTS`
-  - Values :- `True`/`False` [Can be set from settings menu]
-  - Default Value :- `False`
-  - Use :- Should all the upload to telegram be forced as documents or not.
-
-- `COMPLETED_STR`
-  - Values :- Any character [Only 1 character] [Can be set from settings menu]
-  - Default Value :- `▰`
-  - Use :- Character used to denote completed progress in the progress bar. 
+## How To Deploy 👷
 
 
-- `REMAINING_STR`
-  - Values :- Any character [Only 1 character] [Can be set from settings menu]
-  - Default Value :- `▱`
-  - Use :- Character used to denote remaining progress in the progress bar. 
+* [**With Docker 🐳**](https://theuserge.github.io/deployment#deploying-with-docker-)
 
-- `RCLONE_BASE_DIR`
-  - Values :- Rclone Base Directory to where stuff should be clonned inside your drive. [Cannot be configured from settings]
-  - Default Value :- `"/"`
-  - Use :- The bot will upload all the files to that folder in the drive.
+* [**With Git, Python and pip 🔧**](https://theuserge.github.io/deployment#deploying-with-legacy-method)
 
-- `LEECH_ENABLED`
-  - Values :- `True`/`False` [Can be set from settings under control action]
-  - Default Value :- `True`
-  - Use :- Upload to telegram should be enabled or not.
+* [**With Zeet ☻**](https://theuserge.github.io/deployment.html#deploying-on-zeet)
 
-- `RCLONE_ENABLED`
-  - Values :- `True`/`False` [Can be set from settings under control action]
-  - Default Value :- `False`
-  - Use :- Upload to rclone should be enabled or not.
+### Video Tutorial 🎥
 
+  [![Tutorial](resources/tutorial.jpg)](https://youtu.be/M4T_BJvFqkc "Tutorial")
 
-- `DEFAULT_TIMEOUT`
-  - Values :- `"leech"`/`"rclone"`
-  - Default Value :- `"leech"`
-  - Use :- Default destination (rclone or leech) to choose if the user fails to choose upload destination in 60 seconds.
+### Support & Discussions 👥
 
-- `RCLONE_CONFIG`
-  - Values :- Path to the RCLONE.conf file [IT IS RECOMMENDED TO SET THIS FROM SETTINGS MENU]
-  - Default Value :- `False`
-  - Use :- Rclone file path.
+> Head over to the [Discussion Group](https://t.me/usergeot) and [Update Channel](https://t.me/theUserge)
 
-- `DEF_RCLONE_DRIVE`
-  - Values :- Default Rclone drive from the config file. This is the heading of a config from the file. [IT IS RECOMMENDED TO SET THIS FROM SETTINGS MENU]
-  - Default Value :- `""`
-  - Use :- Name of the config in the conf file to refer to.
+### Project Credits 💆‍♂️
 
-- `MAX_YTPLAYLIST_SIZE`
-  - Values :- Max size of a playlist that is allowed (Number of videos) [Can be set from settings menu]
-  - Default Value :- `20` 
-  - Use :- Stops the user from downloading big playlists.
+* [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration-) 🥰
+* [Contributors](https://github.com/UsergeTeam/Userge/graphs/contributors) 👥
 
-- `MAX_TORRENT_SIZE`
-  - Values :- Max torrent size in GBs that is allowed. [Can be set from settings menu]
-  - Default Value :- `10`
-  - Use :- Stops the user from downloading big torrents.
+### Copyright & License 👮
 
-- `USER_CAP_ENABLE` : Work in progress
-- `USER_CAP_LIMIT` : Work in progress
-
-## **Rest Variables are not to be changed** 
-
-## Commands
-
-    leech - To Leech a torrent or download a direct link
-    ytdl - Donwload YouTube Video
-    pytdl - Download YouTube Playlist
-    about - About the bot
-    status - Status of all the downloads
-    server - Get server status
-    usettings - User Settings
-    instadl - Instagram Post/Reel/IGTV download
-    settings - Settings of the bot ⚠️ Admin Only
-    pauseall - Pause all torrents⚠️ Admin Only
-    resumeall - Resume all torrents⚠️ Admin Only
-    purge - Delete all torrents ⚠️ Admin Only
-    getlogs - Get the robot logs ⚠️ Admin Only
-
-# Credits
-[Yash-DK](https://github.com/yash-dk)
-[Lonami](https://github.com/LonamiWebs/Telethon/) for awesome Telethon
-[All the Libraries owner](https://github.com/yash-dk/TorToolkit-Telegram/blob/master/requirements.txt)
+* Copyright (C) 2020 - 2021 by [UsergeTeam](https://github.com/UsergeTeam) ❤️️
+* Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/UsergeTeam/Userge/blob/master/LICENSE)
