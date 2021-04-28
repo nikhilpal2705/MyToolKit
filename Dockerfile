@@ -1,47 +1,37 @@
-# set base image (host OS)
-FROM python:3.9
+FROM ubuntu:20.04
 
-# set the working directory in the container
-WORKDIR /app/
+WORKDIR /torapp
+
+RUN chmod -R 777 /torapp
 
 RUN apt -qq update
-RUN apt -qq install -y --no-install-recommends \
-    curl \
-    git \
-    gnupg2 \
-    unzip \
-    wget \
-    ffmpeg \
-    jq
 
-# install chrome
-RUN mkdir -p /tmp/ && \
-    cd /tmp/ && \
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-    # -f ==> is required to --fix-missing-dependancies
-    dpkg -i ./google-chrome-stable_current_amd64.deb; apt -fqqy install && \
-    # clean up the container "layer", after we are done
-    rm ./google-chrome-stable_current_amd64.deb
+ENV TZ Asia/Kolkata
+ENV DEBIAN_FRONTEND noninteractive
 
-# install chromedriver
-RUN mkdir -p /tmp/ && \
-    cd /tmp/ && \
-    wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip  && \
-    unzip /tmp/chromedriver.zip chromedriver -d /usr/bin/ && \
-    # clean up the container "layer", after we are done
-    rm /tmp/chromedriver.zip
+RUN apt -qq install -y curl git wget \
+    python3 python3-pip \
+    aria2 \
+    ffmpeg mediainfo unzip p7zip-full p7zip-rar
 
-ENV GOOGLE_CHROME_DRIVER /usr/bin/chromedriver
-ENV GOOGLE_CHROME_BIN /usr/bin/google-chrome-stable
+RUN curl https://rclone.org/install.sh | bash
 
-# copy the dependencies file to the working directory
+
+RUN apt-get install -y software-properties-common
+RUN apt-get -y update
+
+RUN add-apt-repository -y ppa:qbittorrent-team/qbittorrent-stable
+RUN apt install -y qbittorrent-nox
+
 COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# install dependencies
-RUN pip install -r requirements.txt
-
-# copy the content of the local src directory to the working directory
 COPY . .
 
-# command to run on container start
-CMD [ "bash", "./run" ]
+RUN chmod 777 alive.sh
+RUN chmod 777 start.sh
+
+#RUN useradd -ms /bin/bash  myuser
+#USER myuser
+
+CMD ./start.sh
