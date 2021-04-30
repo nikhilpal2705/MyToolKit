@@ -61,7 +61,7 @@ async def handle_user_setting_callback(e):
         await e.answer("Send the thumbnail.", alert=True)
         mmes = await e.get_message()
         await mmes.edit(f"{mmes.raw_text}\n /ignore to go back.", buttons=None)
-        val = await get_value(e,file=True,photo=True)
+        val = await get_value(e,True)
         await general_input_manager(e,mmes,"THUMBNAIL","str",val,sender_id,"thumbmenu")  
 
     elif cmd[1] == "selfdest":
@@ -250,13 +250,13 @@ async def general_input_manager(e,mmes,var_name,datatype,value,sender_id,sub_men
         await handle_user_settings(mmes,True,f"<b><u>Entry Timed out [waited 60s for input]. OR else ignored.</b></u>",sub_menu, sender_id=sender_id)
 
 
-async def get_value(e,file=False,photo=False):
+async def get_value(e,file=False):
     # todo replace with conver. - or maybe not Fix Dont switch to conversion
     # this function gets the new value to be set from the user in current context
     lis = [False,None]
 
     #func tools works as expected ;);)    
-    cbak = partial(val_input_callback,o_sender=e.sender_id,lis=lis,file=file,photo=photo)
+    cbak = partial(val_input_callback,o_sender=e.sender_id,lis=lis,file=file)
     
     e.client.add_event_handler(
         #lambda e: test_callback(e,lis),
@@ -303,26 +303,20 @@ async def get_confirm(e):
 
     return val
 
-async def val_input_callback(e,o_sender,lis,file,photo):
+async def val_input_callback(e,o_sender,lis,file):
     # get the input value
     if o_sender != e.sender_id:
         return
-    if not file and not photo:
+    if not file:
         lis[0] = True
         lis[1] = e.text
         await e.delete()
     else:
-        if e.document is not None and file:
+        if e.document is not None:
             path = await e.download_media()
             lis[0]  = True
             lis[1] = path 
             await e.delete()
-        elif e.photo is not None and photo:
-            path = await e.download_media()
-            lis[0]  = True
-            lis[1] = path 
-            await e.delete()
-        
         else:
             if "ignore" in e.text:
                 lis[0]  = True

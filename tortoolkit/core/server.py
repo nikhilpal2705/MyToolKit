@@ -6,7 +6,6 @@ import qbittorrentapi as qba
 from . import nodes
 from .database_handle import TtkTorrents
 import asyncio,logging,os,traceback
-import os, time
 
 torlog = logging.getLogger(__name__)
 
@@ -15,7 +14,7 @@ routes = web.RouteTableDef()
 page = """
 <html>
 <head>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+<script src="https://raw.githubusercontent.com/devillD/JQuery-CSS-Library/main/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
@@ -34,7 +33,7 @@ p { font-size: 12px; margin: 24px;}
 </style>
 </head>
 <body>
-<h1>TorToolKit : <a href="#">Github</a></h1>
+<h1>select file from below to download</h1>
 <form action="{form_url}" method="POST">
 
 {My_content}
@@ -105,9 +104,9 @@ $('input[type="checkbox"]').change(function(e) {
 code_page = """
 <html>
 <head>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+<link rel="stylesheet" href="https://raw.githubusercontent.com/devillD/JQuery-CSS-Library/main/bootstrap-4.5.2.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 <title>
-TorToolkit Torrent Files
+Torrent Files
 </title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -270,65 +269,33 @@ async def set_priority(request):
 
 @routes.get('/')
 async def homepage(request):
-    return web.Response(text="<h1>See TorTookit <a href=\"#\">@GitHub</a> By YashDK</h1>",content_type="text/html")
+    return web.Response(text="<h1>Page by <a href=\"#https://t.me/unkusr\">UnkUsr</a></h1>",content_type="text/html")
 
 async def e404_middleware(app, handler):
   async def middleware_handler(request):
       try:
           response = await handler(request)
           if response.status == 404:
-              return web.Response(text="<h1>404: Page not found</h2><br><h3>Tortoolkit</h3>",content_type="text/html")
+              return web.Response(text="<h1>Kiddo, you are on wrong page</h2>",content_type="text/html")
           return response
       except web.HTTPException as ex:
           if ex.status == 404:
-              return web.Response(text="<h1>404: Page not found</h2><br><h3>Tortoolkit</h3>",content_type="text/html")
+              return web.Response(text="<h1>Kiddo, you are on wrong page</h2>",content_type="text/html")
           raise
   return middleware_handler
 
 async def start_server():
-    strfg = ""
-    hyu = [104,101, 114,111, 107,117, 97, 112,112, 46,99, 111, 109]
     
-    for i in hyu:
-        strfg += chr(i)
-    # Configure the server
-    if os.environ.get("BASE_URL_OF_BOT",False):
-        if strfg.lower() in os.environ.get("BASE_URL_OF_BOT").lower():
-          tm = [84 , 
-          73 , 77 , 69 , 
-          95 , 83 , 
-          84 , 65 , 84]
-          strfg=""
-          for i in tm:
-            strfg += chr(i)
-          os.environ[strfg] = str(time.time())
-    
-
     app = web.Application(middlewares=[e404_middleware])
     app.add_routes(routes)
     return app
 
-async def start_server_async(port = 8080):
-    strfg = ""
-    hyu = [104,101, 114,111, 107,117, 97, 112,112, 46,99, 111, 109]
-    
-    for i in hyu:
-        strfg += chr(i)
-    # Configure the server
-    if os.environ.get("BASE_URL_OF_BOT",False):
-        if strfg.lower() in os.environ.get("BASE_URL_OF_BOT").lower():
-          tm = [84 , 
-          73 , 77 , 69 , 
-          95 , 83 , 
-          84 , 65 , 84]
-          strfg=""
-          for i in tm:
-            strfg += chr(i)
-          os.environ[strfg] = str(time.time())
+async def start_server_async():
     
     app = web.Application(middlewares=[e404_middleware])
     app.add_routes(routes)
     runner = web.AppRunner(app)
     await runner.setup()
     #todo provide the config for the host and port for vps only
-    await web.TCPSite(runner,"0.0.0.0",port).start()
+    port = int(os.environ.get("PORT",8080))
+    await web.TCPSite(runner,"localhost",port).start()

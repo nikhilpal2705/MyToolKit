@@ -1,12 +1,12 @@
 FROM ubuntu:20.04
 
-WORKDIR /torapp
+WORKDIR /ttk
 
-RUN chmod -R 777 /torapp
+RUN chmod -R 777 /ttk
 
 RUN apt -qq update
 
-ENV TZ Asia/Kolkata
+ENV TZ Asia/Dhaka
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt -qq install -y curl git wget \
@@ -31,7 +31,7 @@ COPY . .
 RUN chmod 777 alive.sh
 RUN chmod 777 start.sh
 
-#RUN useradd -ms /bin/bash  myuser
-#USER myuser
+RUN useradd -ms /bin/bash unkusr
+USER unkusr
 
 CMD ./start.sh

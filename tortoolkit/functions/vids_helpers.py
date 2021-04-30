@@ -73,8 +73,7 @@ async def split_file(path,max_size,force_docs=False):
         
         parts = math.ceil(total_file_size/max_size)
         #need this to be implemented to remove recursive file split calls
-        #remove saftey margin
-        #parts += 1
+        parts += 1
         torlog.info(f"Parts {parts}")
 
         minimum_duration = (total_duration / parts) 

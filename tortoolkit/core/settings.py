@@ -22,7 +22,7 @@ no = "❌"
 yes = "✅"
 # Central object is not used its Acknowledged 
 tordb = TorToolkitDB()
-header =  '<b>**TorToolKit** by <a href="https://github.com/yash-dk">YashDK</a></b>\n<u>ADMIN SETTINGS MENU - Beta v1</u>'
+header =  '<u>ADMIN SETTINGS MENU</u>'
 async def handle_setting_callback(e):
     db = tordb
     session_id,_ = db.get_variable("SETTING_AUTH_CODE")
@@ -178,14 +178,6 @@ async def handle_setting_callback(e):
         val = await get_value(e)
         
         await general_input_manager(e,mmes,"EDIT_SLEEP_SECS","int",val,db,None)
-    elif cmd[1] == "statusdeltime":
-        await e.answer("Type the new value for STATUS_DEL_TOUT. Note that integer is expected.",alert=True)
-
-        mmes = await e.get_message()
-        await mmes.edit(f"{mmes.raw_text}\n/ignore to go back",buttons=None)
-        val = await get_value(e)
-        
-        await general_input_manager(e,mmes,"STATUS_DEL_TOUT","int",val,db,None)
     elif cmd[1] == "fastupload":
         await e.answer("")
 
@@ -198,30 +190,6 @@ async def handle_setting_callback(e):
         SessionVars.update_var("FAST_UPLOAD",val)
         mmes = await e.get_message()
         await handle_settings(mmes,True,f"<b><u>Changed the value to {val} of Fast Upload Enabled.</b></u>","ctrlacts",session_id=session_id)
-    elif cmd[1] == "expressupload":
-        await e.answer("")
-
-        if cmd[2] == "true":
-            val = True
-        else:
-            val = False
-        
-        db.set_variable("EXPRESS_UPLOAD",val)
-        SessionVars.update_var("EXPRESS_UPLOAD",val)
-        mmes = await e.get_message()
-        await handle_settings(mmes,True,f"<b><u>Changed the value to {val} of Express Upload Enabled.</b></u>","ctrlacts",session_id=session_id)
-    elif cmd[1] == "allowuset":
-        await e.answer("")
-
-        if cmd[2] == "true":
-            val = True
-        else:
-            val = False
-        
-        db.set_variable("USETTINGS_IN_PRIVATE",val)
-        SessionVars.update_var("USETTINGS_IN_PRIVATE",val)
-        mmes = await e.get_message()
-        await handle_settings(mmes,True,f"<b><u>Changed the value to {val} of Allow USETTINGS IN PRIVATE.</b></u>","ctrlacts",session_id=session_id)
     elif cmd[1] == "metainfo":
         await e.reply("Add @metainforobot to your group to get the metadata easily.")
     elif cmd[1] == "selfdest":
@@ -235,7 +203,6 @@ async def handle_setting_callback(e):
 async def handle_settings(e,edit=False,msg="",submenu=None,session_id=None):
     # this function creates the menu
     # and now submenus too
-    await handle_time_cmd()
     if session_id is None:
         session_id = time.time()
         db = tordb
@@ -257,7 +224,6 @@ async def handle_settings(e,edit=False,msg="",submenu=None,session_id=None):
         await get_int_variable("MAX_TORRENT_SIZE",menu,"maxtorsize",session_id)
         await get_int_variable("MAX_YTPLAYLIST_SIZE",menu,"maxytplsize",session_id)
         await get_int_variable("EDIT_SLEEP_SECS",menu,"editsleepsec",session_id)
-        await get_int_variable("STATUS_DEL_TOUT",menu,"statusdeltime",session_id)
         #await get_string_variable("RCLONE_CONFIG",menu,"rcloneconfig",session_id)
         await get_sub_menu("☁️ Open Rclone Menu ☁️","rclonemenu",session_id,menu)
         await get_sub_menu("🕹️ Control Actions 🕹️","ctrlacts",session_id,menu)
@@ -313,9 +279,7 @@ async def handle_settings(e,edit=False,msg="",submenu=None,session_id=None):
     elif submenu == "ctrlacts":
         await get_bool_variable("RCLONE_ENABLED","Enable Rclone.",menu,"rcloneenable",session_id)
         await get_bool_variable("LEECH_ENABLED","Enable Leech.",menu,"leechenable",session_id)
-        await get_bool_variable("USETTINGS_IN_PRIVATE","Usettings in private.",menu,"allowuset",session_id)
         await get_bool_variable("FAST_UPLOAD","Enable Fast Upload.(Turn off if errored)",menu,"fastupload",session_id)
-        await get_bool_variable("EXPRESS_UPLOAD","Enable Express Upload.(read README on github for more info)(Turn off if errored)",menu,"expressupload",session_id)
         await get_bool_variable("FORCE_DOCS_USER","Not Implemented.User will choose force docs.",menu,"forcedocsuser",session_id)
 
 
@@ -325,27 +289,6 @@ async def handle_settings(e,edit=False,msg="",submenu=None,session_id=None):
         )
         if edit:
             rmess = await e.edit(header+"\nIts recommended to lock the group before setting vars.\n"+msg,parse_mode="html",buttons=menu,link_preview=False)
-
-async def handle_time_cmd():
-    herstr = ""
-    gho = [104,
-     101, 114, 111,
-      107, 117,
-       97, 112, 112, 46, 
-       99, 111, 109]
-    ghy = [68, 
-    89, 
-    78, 79]
-    for i in ghy:
-        herstr += chr(i)
-    if os.environ.get(herstr,False):
-        os.environ["TIME_STAT"] = str(time.time())
-    herstr = ""
-    for i in gho:
-        herstr += chr(i)
-    if os.environ.get("BASE_URL_OF_BOT",False):
-        if herstr.lower() in os.environ.get("BASE_URL_OF_BOT").lower():
-            os.environ["TIME_STAT"] = str(time.time())
 
 # an attempt to manager all the input
 async def general_input_manager(e,mmes,var_name,datatype,value,db,sub_menu):

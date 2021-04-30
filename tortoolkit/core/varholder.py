@@ -4,7 +4,6 @@
 from ..consts.ExecVarsSample import ExecVars
 import os
 import logging
-import time
 
 torlog = logging.getLogger(__name__)
 
@@ -12,14 +11,6 @@ class VarHolder:
     def __init__(self, var_db):
         self._var_dict = dict()
         self._vardb = var_db
-
-        # check var configs
-        herstr = ""
-        sam1 = [68, 89, 78, 79]
-        for i in sam1:
-            herstr += chr(i)
-        if os.environ.get(herstr,False):
-            os.environ["TIME_STAT"] = str(time.time())
 
     def get_var(self, variable):
         if variable in self._var_dict.keys():
@@ -37,9 +28,6 @@ class VarHolder:
         #Get the variable form the env [overlap]
         #try:
         envval = os.environ.get(variable)
-        INTS = ["EDIT_SLEEP_SECS", "MAX_TORRENT_SIZE", "MAX_YTPLAYLIST_SIZE", "TG_UP_LIMIT", "API_ID", "STATUS_DEL_TOUT", "TOR_MAX_TOUT", "OWNER_ID"]
-        BOOLS = ["FORCE_DOCUMENTS", "LEECH_ENABLED", "RCLONE_ENABLED", "USETTINGS_IN_PRIVATE"]
-
         if variable == "ALD_USR":
             if envval is not None:
                 templi = envval.split(" ")
@@ -54,17 +42,7 @@ class VarHolder:
                     val.extend(templi2)
                 else:
                     val = templi
-        elif variable in INTS:
-            val =  int(envval) if envval is not None else val
-        elif variable in BOOLS:
-            if envval:
-                if not isinstance(val, bool):
-                    if "true" in envval.lower():
-                        val = True
-                    else:
-                        val = False
-            else:
-                val = None
+            
         else:
             val =  envval if envval is not None else val
 
@@ -75,8 +53,7 @@ class VarHolder:
             val = dbval
 
         if val is None:
-            torlog.error("The variable was not found in either the constants, environment or database. Variable is :- {}".format(variable))
-            #raise Exception("The variable was not found in either the constants, environment or database. Variable is :- {}".format(variable))
+            raise Exception("The variable was not found in either the constants, environment or database. Variable is :- {}".format(variable))
         
         if isinstance(val,str):
             val = val.strip()

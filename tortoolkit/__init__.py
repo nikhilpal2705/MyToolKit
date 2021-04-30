@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-__version__ = "0.2.4"
+__version__ = "0.1.3"
 __author__ = "YashDK Github@yash-dk"
 
 import logging
@@ -10,10 +10,9 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(),logging.FileHandler("torlog.txt")]
 )
 
-from tortoolkit.core.wserver import start_server
+from tortoolkit.core.server import start_server
 from .core.database_handle import TtkUpload,TorToolkitDB,TtkTorrents, UserDB
-from .core.varholdern import VarHolder
-import time
+from .core.varholder import VarHolder
 
 logging.info("Database created")
 upload_db = TtkUpload()
@@ -21,6 +20,4 @@ var_db = TorToolkitDB()
 tor_db = TtkTorrents()
 user_db = UserDB()
 
-uptime = time.time()
-to_del = []
 SessionVars = VarHolder(var_db)
