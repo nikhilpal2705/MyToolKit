@@ -51,8 +51,8 @@ _checkDefaultVars() {
         [PREFERRED_LANGUAGE]="en"
         [DOWN_PATH]="downloads"
         [UPSTREAM_REMOTE]="upstream"
-        [UPSTREAM_REPO]="https://github.com/code-rgb/USERGE-X"
-        [LOAD_UNOFFICIAL_PLUGINS]=true
+        [UPSTREAM_REPO]="https://github.com/UsergeTeam/Userge"
+        [LOAD_UNOFFICIAL_PLUGINS]=false
         [CUSTOM_PLUGINS_REPO]=""
         [G_DRIVE_IS_TD]=true
         [CMD_TRIGGER]="."
@@ -112,10 +112,24 @@ _checkTriggers() {
 
 _checkPaths() {
     editLastMessage "Checking Paths ..."
-    for path in $DOWN_PATH logs; do
+    for path in $DOWN_PATH logs bin; do
         test ! -d $path && {
             log "\tCreating Path : ${path%/} ..."
             mkdir -p $path
+        }
+    done
+}
+
+_checkBins() {
+    editLastMessage "Checking BINS ..."
+    declare -rA bins=(
+        [bin/megadown]="https://raw.githubusercontent.com/yshalsager/megadown/master/megadown"
+        [bin/cmrudl]="https://raw.githubusercontent.com/yshalsager/cmrudl.py/master/cmrudl.py"
+    )
+    for bin in ${!bins[@]}; do
+        test ! -f $bin && {
+            log "\tDownloading $bin ..."
+            curl -so $bin ${bins[$bin]}
         }
     done
 }
@@ -150,7 +164,7 @@ _setupPlugins() {
 }
 
 _checkUnoffPlugins() {
-    _setupPlugins Xtra true $LOAD_UNOFFICIAL_PLUGINS https://github.com/code-rgb/Userge-Plugins.git
+    _setupPlugins UnOfficial true $LOAD_UNOFFICIAL_PLUGINS https://github.com/UsergeTeam/Userge-Plugins.git
 }
 
 _checkCustomPlugins() {
@@ -173,6 +187,7 @@ assertEnvironment() {
     _checkDatabase
     _checkTriggers
     _checkPaths
+    _checkBins
     _checkUpstreamRepo
     _checkUnoffPlugins
     _checkCustomPlugins

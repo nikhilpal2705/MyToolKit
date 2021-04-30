@@ -46,6 +46,12 @@ async def _complete_init_tasks() -> None:
 
 class _AbstractUserge(Methods, RawClient):
     @property
+    def id(self) -> int:
+        if self.is_bot:
+            return RawClient.BOT_ID
+        return RawClient.USER_ID
+
+    @property
     def is_bot(self) -> bool:
         """ returns client is bot or not """
         if self._bot is not None:
@@ -105,11 +111,17 @@ class _AbstractUserge(Methods, RawClient):
         await self.finalize_load()
         return len(reloaded)
 
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, _AbstractUserge) and self.id == o.id
+
+    def __hash__(self) -> int:
+        return super().__hash__()
+
 
 class UsergeBot(_AbstractUserge):
-    """ USERGE-X Bot """
+    """ UsergeBot, the bot """
     def __init__(self, **kwargs) -> None:
-        _LOG.info(_LOG_STR, "Setting X-BOT Configs")
+        _LOG.info(_LOG_STR, "Setting UsergeBot Configs")
         super().__init__(session_name=":memory:", **kwargs)
 
     @property
@@ -124,7 +136,7 @@ class Userge(_AbstractUserge):
     has_bot = bool(Config.BOT_TOKEN)
 
     def __init__(self, **kwargs) -> None:
-        _LOG.info(_LOG_STR, "Setting USERGE-X Configs")
+        _LOG.info(_LOG_STR, "Setting Userge Configs")
         kwargs = {
             'api_id': Config.API_ID,
             'api_hash': Config.API_HASH,
@@ -141,6 +153,10 @@ class Userge(_AbstractUserge):
         self.executor = pool._get()  # pylint: disable=protected-access
 
     @property
+    def dual_mode(self) -> bool:
+        return RawClient.DUAL_MODE
+
+    @property
     def bot(self) -> Union['UsergeBot', 'Userge']:
         """ returns usergebot """
         if self._bot is None:
@@ -151,19 +167,19 @@ class Userge(_AbstractUserge):
 
     async def start(self) -> None:
         """ start client and bot """
-        _LOG.info(_LOG_STR, "Starting USERGE-X")
+        _LOG.info(_LOG_STR, "Starting Userge")
         await super().start()
         if self._bot is not None:
-            _LOG.info(_LOG_STR, "Starting X-Bot")
+            _LOG.info(_LOG_STR, "Starting UsergeBot")
             await self._bot.start()
         await self._load_plugins()
 
     async def stop(self) -> None:  # pylint: disable=arguments-differ
         """ stop client and bot """
         if self._bot is not None:
-            _LOG.info(_LOG_STR, "Stopping X-Bot")
+            _LOG.info(_LOG_STR, "Stopping UsergeBot")
             await self._bot.stop()
-        _LOG.info(_LOG_STR, "Stopping USERGE-X")
+        _LOG.info(_LOG_STR, "Stopping Userge")
         await super().stop()
         _close_db()
         pool._stop()  # pylint: disable=protected-access
@@ -190,7 +206,7 @@ class Userge(_AbstractUserge):
 
         async def _shutdown(_sig: signal.Signals) -> None:
             global _SEND_SIGNAL  # pylint: disable=global-statement
-            _LOG.info(_LOG_STR, f"Received Stop Signal [{_sig.name}], Exiting USERGE-X ...")
+            _LOG.info(_LOG_STR, f"Received Stop Signal [{_sig.name}], Exiting Userge ...")
             await _finalize()
             if _sig == _sig.SIGUSR1:
                 _SEND_SIGNAL = True
@@ -201,7 +217,7 @@ class Userge(_AbstractUserge):
         self.loop.run_until_complete(self.start())
         for task in self._tasks:
             running_tasks.append(self.loop.create_task(task()))
-        logbot.edit_last_msg("USERGE-X has Started Successfully !")
+        logbot.edit_last_msg("Userge has Started Successfully !")
         logbot.end()
         mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if Config.BOT_TOKEN else "[USER]"
         try:
@@ -209,7 +225,7 @@ class Userge(_AbstractUserge):
                 _LOG.info(_LOG_STR, f"Running Coroutine - {mode}")
                 self.loop.run_until_complete(coro)
             else:
-                _LOG.info(_LOG_STR, f"Idling USERGE-X - {mode}")
+                _LOG.info(_LOG_STR, f"Idling Userge - {mode}")
                 idle()
             self.loop.run_until_complete(_finalize())
         except (asyncio.exceptions.CancelledError, RuntimeError):

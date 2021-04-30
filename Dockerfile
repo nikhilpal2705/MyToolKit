@@ -1,53 +1,57 @@
-FROM python:3.9-slim-buster
+# set base image (host OS)
+FROM python:3.9
 
-ENV PIP_NO_CACHE_DIR 1
-ENV LANG C.UTF-8
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN sed -i.bak 's/us-west-2\.ec2\.//' /etc/apt/sources.list
-
+# set the working directory in the container
 WORKDIR /app/
 
-RUN apt -qq update && apt -qq upgrade -y && \
-    apt -qq install -y --no-install-recommends \
-    apt-utils \
+RUN apt -qq update
+RUN apt -qq install -y --no-install-recommends \
     curl \
     git \
     gnupg2 \
-    wget \
     unzip \
-    tree
+    wget \
+    ffmpeg \
+    jq
 
+# install chrome
 RUN mkdir -p /tmp/ && \
     cd /tmp/ && \
     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    # -f ==> is required to --fix-missing-dependancies
     dpkg -i ./google-chrome-stable_current_amd64.deb; apt -fqqy install && \
+    # clean up the container "layer", after we are done
     rm ./google-chrome-stable_current_amd64.deb
 
+# install chromedriver
 RUN mkdir -p /tmp/ && \
     cd /tmp/ && \
-    wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip && \
+    wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip  && \
     unzip /tmp/chromedriver.zip chromedriver -d /usr/bin/ && \
+    # clean up the container "layer", after we are done
     rm /tmp/chromedriver.zip
 
 ENV GOOGLE_CHROME_DRIVER /usr/bin/chromedriver
 ENV GOOGLE_CHROME_BIN /usr/bin/google-chrome-stable
 
-RUN apt -qq update && apt -qq install -y --no-install-recommends \
-    gcc python3-dev zlib1g-dev \
-    apt-transport-https \
-    build-essential coreutils jq pv \
-    ffmpeg mediainfo \
-    neofetch \
-    p7zip-full \
-    libfreetype6-dev libjpeg-dev libpng-dev libgif-dev libwebp-dev && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives /tmp/*
+# install rar
+RUN mkdir -p /tmp/ && \
+    cd /tmp/ && \
+    wget -O /tmp/rarlinux.tar.gz http://www.rarlab.com/rar/rarlinux-x64-6.0.0.tar.gz && \
+    tar -xzvf rarlinux.tar.gz && \
+    cd rar && \
+    cp -v rar unrar /usr/bin/ && \
+    # clean up
+    rm -rf /tmp/rar*
 
+# copy the dependencies file to the working directory
 COPY requirements.txt .
 
-RUN pip install -U setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+# install dependencies
+RUN pip install -r requirements.txt
 
+# copy the content of the local src directory to the working directory
 COPY . .
 
+# command to run on container start
 CMD [ "bash", "./run" ]

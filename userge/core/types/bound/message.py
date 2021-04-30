@@ -125,12 +125,9 @@ class Message(RawMessage):
         """
         user_e: Optional[Union[str, int]] = None
         text: Optional[str] = None
-        reply = self.reply_to_message
-        if reply and not reply.forward_sender_name:
-            if reply.forward_from:
-                user_e = reply.forward_from.from_user.id
-            elif reply.from_user:
-                user_e = reply.from_user.id
+        if self.reply_to_message:
+            if self.reply_to_message.from_user:
+                user_e = self.reply_to_message.from_user.id
             text = self.filtered_input_str
             return user_e, text
         if self.filtered_input_str:

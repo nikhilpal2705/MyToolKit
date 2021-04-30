@@ -94,7 +94,7 @@ upgradePip() {
 }
 
 installReq() {
-    pip3 install -U -r $1/requirements.txt &> /dev/null
+    pip3 install -r $1/requirements.txt &> /dev/null
 }
 
 printLine() {
@@ -104,22 +104,12 @@ printLine() {
 printLogo() {
     printLine
     echo '
-                 XXXXXXX       XXXXXXX                
-                 X:::::X       X:::::X                
-                 X:::::X       X:::::X                
-                 X::::::X     X::::::X                
-                 XXX:::::X   X:::::XXX                
-                    X:::::X X:::::X                   
-                     X:::::X:::::X                    
- ---------------      X:::::::::X      ---------------
- -:::::::::::::-      X:::::::::X      -:::::::::::::-
- ---------------     X:::::X:::::X     ---------------
-                    X:::::X X:::::X                   
-                 XXX:::::X   X:::::XXX                
-                 X::::::X     X::::::X                
-                 X:::::X       X:::::X                
-                 X:::::X       X:::::X                
-                 XXXXXXX       XXXXXXX                
+     ________            __  __               ______   
+    /_  __/ /_  ___     / / / /_______  _____/ ____/__ 
+     / / / __ \/ _ \   / / / / ___/ _ \/ ___/ / __/ _ \
+    / / / / / /  __/  / /_/ (__  )  __/ /  / /_/ /  __/
+   /_/ /_/ /_/\___/   \____/____/\___/_/   \____/\___/ 
+                                                     
 '
     printLine
 }

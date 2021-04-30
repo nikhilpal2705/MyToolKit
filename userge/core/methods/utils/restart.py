@@ -26,13 +26,13 @@ _LOG_STR = "<<<!  #####  %s  #####  !>>>"
 class Restart(RawClient):  # pylint: disable=missing-class-docstring
     async def restart(self, update_req: bool = False,  # pylint: disable=arguments-differ
                       hard: bool = False) -> None:
-        """ Restart the Abstract USERGE-X"""
-        _LOG.info(_LOG_STR, "Restarting USERGE-X")
+        """ Restart the AbstractUserge """
+        _LOG.info(_LOG_STR, "Restarting Userge")
         await self.stop()
         if update_req:
             _LOG.info(_LOG_STR, "Installing Requirements...")
-            os.system(  
-                "pip3 install -U pip && pip3 install -U -r requirements.txt")
+            os.system(  # nosec
+                "pip3 install -U pip && pip3 install -r requirements.txt")
             _LOG.info(_LOG_STR, "Requirements Installed !")
         if hard:
             os.kill(os.getpid(), signal.SIGUSR1)

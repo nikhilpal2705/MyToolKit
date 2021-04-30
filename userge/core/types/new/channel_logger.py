@@ -1,10 +1,10 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -16,8 +16,9 @@ from typing import Optional, Union
 from pyrogram.errors import ChatWriteForbidden
 from pyrogram.types import Message as RawMessage
 from pyrogram.errors.exceptions import MessageTooLong
+
 from userge import logging, Config
-from userge.utils import SafeDict, get_file_id, parse_buttons, rand_array
+from userge.utils import SafeDict, get_file_id_of_media, parse_buttons
 from ..bound import message as _message  # pylint: disable=unused-import
 from ... import client as _client  # pylint: disable=unused-import
 
@@ -133,9 +134,9 @@ class ChannelLogger:
         caption = caption or ''
         file_id = None
         if message and message.caption:
-            caption = (caption + message.caption.html) if caption != message.caption.html else caption
+            caption = caption + message.caption.html
         if message:
-            file_id = get_file_id(message)
+            file_id = get_file_id_of_media(message)
         if message and message.media and file_id:
             if caption:
                 caption = self._string.format(caption.strip())
@@ -153,8 +154,7 @@ class ChannelLogger:
                              chat_id: int,
                              user_id: int,
                              reply_to_message_id: int,
-                             del_in: int = 0,
-                             allow_random:bool=True) -> None:
+                             del_in: int = 0) -> None:
         """\nforward stored message from log channel.
 
         Parameters:
@@ -195,11 +195,8 @@ class ChannelLogger:
                 'chat': chat.title if chat.title else "this group",
                 'count': chat.members_count})
             caption = caption.format_map(SafeDict(**u_dict))
-        file_id = get_file_id(message)
+        file_id = get_file_id_of_media(message)
         caption, buttons = parse_buttons(caption)
-        split_char = r"%%%"
-        if allow_random and split_char in caption:
-            caption = rand_array(caption.split(split_char))
         try:
             if message.media and file_id:
                 msg = await client.send_cached_media(

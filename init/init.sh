@@ -19,9 +19,9 @@ trap 'echo hi' USR1
 initUserge() {
     printLogo
     assertPrerequisites
-    sendMessage "Initializing USERGE-X ..."
+    sendMessage "Initializing Userge ..."
     assertEnvironment
-    editLastMessage "Starting USERGE-X ..."
+    editLastMessage "Starting Userge ..."
     printLine
 }
 
@@ -31,7 +31,7 @@ startUserge() {
 }
 
 stopUserge() {
-    sendMessage "Exiting USERGE-X ..."
+    sendMessage "Exiting Userge ..."
     endLogBotPolling
 }
 

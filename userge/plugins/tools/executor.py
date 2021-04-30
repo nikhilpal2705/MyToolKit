@@ -8,48 +8,41 @@
 #
 # All rights reserved.
 
-import asyncio
 import io
-import keyword
 import sys
+import asyncio
+import keyword
 import traceback
 from getpass import getuser
 from os import geteuid
+from types import SimpleNamespace
 
-from userge import Config, Message, userge
+from userge import userge, Message, Config
 from userge.utils import runcmd
 
 CHANNEL = userge.getCLogger()
 
 
-@userge.on_cmd(
-    "eval",
-    about={
-        "header": "run python code line | lines",
-        "flags": {"-s": "silent mode (hide STDIN)"},
-        "usage": "{tr}eval [flag] [code lines]",
-        "examples": [
-            "{tr}eval print('USERGE-X')",
-            "{tr}eval -s print('USERGE-X')",
-            "{tr}eval 5 + 6",
-            "{tr}eval -s 5 + 6",
-        ],
-    },
-    allow_channels=False,
-)
+@userge.on_cmd("eval", about={
+    'header': "run python code line | lines",
+    'flags': {'-s': "silent mode (hide STDIN)"},
+    'usage': "{tr}eval [flag] [code lines]",
+    'examples': [
+        "{tr}eval print('Userge')", "{tr}eval -s print('Userge')",
+        "{tr}eval 5 + 6", "{tr}eval -s 5 + 6"]}, allow_channels=False)
 async def eval_(message: Message):
-    """run python code"""
+    """ run python code """
     cmd = await init_func(message)
     if cmd is None:
         return
     silent_mode = False
-    if cmd.startswith("-s"):
+    if cmd.startswith('-s'):
         silent_mode = True
         cmd = cmd[2:].strip()
     if not cmd:
         await message.err("Unable to Parse Input!")
         return
-    await message.edit("`Executing eval ...`", parse_mode="md")
+    await message.edit("`Executing eval ...`", parse_mode='md')
     old_stderr = sys.stderr
     old_stdout = sys.stdout
     redirected_output = sys.stdout = io.StringIO()
@@ -57,23 +50,26 @@ async def eval_(message: Message):
     ret_val, stdout, stderr, exc = None, None, None, None
 
     async def aexec(code):
-        head = "async def __aexec(userge, message):\n "
-        if "\n" in code:
-            rest_code = "\n ".join(iter(code.split("\n")))
-        elif (
-            any(
-                True
-                for k_ in keyword.kwlist
-                if k_ not in ("True", "False", "None") and code.startswith(f"{k_} ")
-            )
-            or "=" in code
-        ):
-            rest_code = f"\n {code}"
+        head = "async def __aexec(userge, message, replied, old):\n try:\n  "
+        tail = "\n finally: globals()['_OLD'] = locals()"
+        if '\n' in code:
+            code = '\n  '.join(iter(code.split('\n')))
+        elif (any(True for k_ in keyword.kwlist
+                  if k_ not in ('True', 'False', 'None') and code.startswith(f"{k_} "))
+              or ('=' in code and '==' not in code)):
+            code = f"\n  {code}"
         else:
-            rest_code = f"\n return {code}"
-        exec(head + rest_code)  # nosec pylint: disable=W0122
-        return await locals()["__aexec"](userge, message)
-
+            code = f"\n  return {code}"
+        exec(head + code + tail)  # nosec pylint: disable=W0122
+        _old = globals().get('_OLD', {})
+        try:
+            old = _old.pop('old')
+            if not isinstance(old, SimpleNamespace):
+                raise KeyError
+            old.__dict__.update(_old)
+        except KeyError:
+            old = SimpleNamespace(**_old)
+        return await locals()['__aexec'](userge, message, message.reply_to_message, old)
     try:
         ret_val = await aexec(cmd)
     except Exception:  # pylint: disable=broad-except
@@ -92,24 +88,20 @@ async def eval_(message: Message):
         msg_id = await CHANNEL.log(output)
         await message.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
     elif output:
-        await message.edit_or_send_as_file(
-            text=output, parse_mode="md", filename="eval.txt", caption=cmd
-        )
+        await message.edit_or_send_as_file(text=output,
+                                           parse_mode='md',
+                                           filename="eval.txt",
+                                           caption=cmd)
     else:
         await message.delete()
 
 
-@userge.on_cmd(
-    "exec",
-    about={
-        "header": "run commands in exec",
-        "usage": "{tr}exec [commands]",
-        "examples": '{tr}exec echo "USERGE-X"',
-    },
-    allow_channels=False,
-)
+@userge.on_cmd("exec", about={
+    'header': "run commands in exec",
+    'usage': "{tr}exec [commands]",
+    'examples': "{tr}exec echo \"Userge\""}, allow_channels=False)
 async def exec_(message: Message):
-    """run commands in exec"""
+    """ run commands in exec """
     cmd = await init_func(message)
     if cmd is None:
         return
@@ -125,22 +117,18 @@ async def exec_(message: Message):
     output = f"**EXEC**:\n\n\
 __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
-    await message.edit_or_send_as_file(
-        text=output, parse_mode="md", filename="exec.txt", caption=cmd
-    )
+    await message.edit_or_send_as_file(text=output,
+                                       parse_mode='md',
+                                       filename="exec.txt",
+                                       caption=cmd)
 
 
-@userge.on_cmd(
-    "term",
-    about={
-        "header": "run commands in shell (terminal)",
-        "usage": "{tr}term [commands]",
-        "examples": '{tr}term echo "USERGE-X"',
-    },
-    allow_channels=False,
-)
+@userge.on_cmd("term", about={
+    'header': "run commands in shell (terminal)",
+    'usage': "{tr}term [commands]",
+    'examples': "{tr}term echo \"Userge\""}, allow_channels=False)
 async def term_(message: Message):
-    """run commands in shell (terminal with live update)"""
+    """ run commands in shell (terminal with live update) """
     cmd = await init_func(message)
     if cmd is None:
         return
@@ -167,11 +155,10 @@ async def term_(message: Message):
         if count >= Config.EDIT_SLEEP_TIMEOUT * 2:
             count = 0
             out_data = f"<pre>{output}{t_obj.read_line}</pre>"
-            await message.try_to_edit(out_data, parse_mode="html")
+            await message.try_to_edit(out_data, parse_mode='html')
     out_data = f"<pre>{output}{t_obj.get_output}</pre>"
     await message.edit_or_send_as_file(
-        out_data, parse_mode="html", filename="term.txt", caption=cmd
-    )
+        out_data, parse_mode='html', filename="term.txt", caption=cmd)
 
 
 async def init_func(message: Message):
@@ -186,14 +173,13 @@ async def init_func(message: Message):
 
 
 class Term:
-    """live update term class"""
-
+    """ live update term class """
     def __init__(self, process: asyncio.subprocess.Process) -> None:
         self._process = process
-        self._stdout = b""
-        self._stderr = b""
-        self._stdout_line = b""
-        self._stderr_line = b""
+        self._stdout = b''
+        self._stderr = b''
+        self._stdout_line = b''
+        self._stderr_line = b''
         self._finished = False
 
     def cancel(self) -> None:
@@ -205,11 +191,11 @@ class Term:
 
     @property
     def read_line(self) -> str:
-        return (self._stdout_line + self._stderr_line).decode("utf-8").strip()
+        return (self._stdout_line + self._stderr_line).decode('utf-8', 'replace').strip()
 
     @property
     def get_output(self) -> str:
-        return (self._stdout + self._stderr).decode("utf-8").strip()
+        return (self._stdout + self._stderr).decode('utf-8', 'replace').strip()
 
     async def _read_stdout(self) -> None:
         while True:
@@ -235,10 +221,9 @@ class Term:
         self._finished = True
 
     @classmethod
-    async def execute(cls, cmd: str) -> "Term":
+    async def execute(cls, cmd: str) -> 'Term':
         process = await asyncio.create_subprocess_shell(
-            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-        )
+            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         t_obj = cls(process)
         asyncio.get_event_loop().create_task(t_obj.worker())
         return t_obj
