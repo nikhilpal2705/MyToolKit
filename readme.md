@@ -3,15 +3,9 @@
 # Slam Tg Mirror Bot
 ![GitHub Repo stars](https://img.shields.io/github/stars/breakdowns/slam-tg-mirror-bot?color=blue&style=flat)
 ![GitHub forks](https://img.shields.io/github/forks/breakdowns/slam-tg-mirror-bot?color=green&style=flat)
-![GitHub issues](https://img.shields.io/github/issues/breakdowns/slam-tg-mirror-bot)
-![GitHub closed issues](https://img.shields.io/github/issues-closed/breakdowns/slam-tg-mirror-bot)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/breakdowns/slam-tg-mirror-bot)
-![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/breakdowns/slam-tg-mirror-bot)
-![GitHub watchers](https://img.shields.io/github/watchers/breakdowns/slam-tg-mirror-bot)
 ![GitHub contributors](https://img.shields.io/github/contributors/breakdowns/slam-tg-mirror-bot?style=flat)
-![GitHub repo size](https://img.shields.io/github/repo-size/breakdowns/slam-tg-mirror-bot?color=red)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/breakdowns/slam-tg-mirror-bot)
-![GitHub](https://img.shields.io/github/license/breakdowns/slam-tg-mirror-bot)
+![GitHub watchers](https://img.shields.io/github/watchers/breakdowns/slam-tg-mirror-bot)
+![Docker Pulls](https://img.shields.io/docker/pulls/breakdowns/mega-sdk-python?label=Docker%20Pull)
 [![Channel](https://img.shields.io/badge/Join%20Channel-!-red)](https://t.me/SlamMirrorUpdates)
 
 **Slam Tg Mirror Bot** is a _multipurpose_ Telegram Bot writen in Python for mirroring files on the Internet to our beloved Google Drive.
@@ -26,6 +20,7 @@
 - Limiting size Torrent/Direct, Tar/Unzip, Mega, cloning Google Drive support
 - Stop duplicate cloning Google Drive & mirroring Mega support
 - Tar/Unzip Google Drive link support
+- Select files before downloading
 - Sudo with Database support
 - Extracting **tar.xz** support
 - Counting Google Drive link
@@ -47,6 +42,7 @@ streamtape.com, streamsb.net, feurl.com, pixeldrain.com, racaty.net,
 1fichier.com, 1drv.ms (Only works for file not folder or business account),
 uptobox.com (Uptobox account must be premium), solidfiles.com
 ```
+
 ## From Original Repos
 - Mirroring direct download links, Torrent, and Telegram files to Google Drive
 - Mirroring Mega.nz links to Google Drive (If your Mega account not premium, it will limit 5GB/6 hours)
@@ -165,9 +161,9 @@ Fill up rest of the fields. Meaning of each fields are discussed below:
 - **HEROKU_APP_NAME**: (Only if you deploying on Heroku) Your Heroku app name.
 - **IGNORE_PENDING_REQUESTS**: If you want the bot to ignore pending requests after it restarts, set this to `True`.
 - **STATUS_LIMIT**: Status limit with buttons (**NOTE**: Recommend limit status to `4` tasks max).
-- **IS_VPS**: Set it to `True` if you use VPS.
-- **SERVER_PORT**: For VPS
-- **BASE_URL_OF_BOT**: Your app URL Examples: `https://yourappname.herokuapp.com`
+- **IS_VPS**: (Only for VPS) Set it to `True` if you use VPS
+- **SERVER_PORT**: (Only for VPS) Your VPS port
+- **BASE_URL_OF_BOT**: (Required for Heroku) Valid BASE URL of where the bot is deploy. Ip/domain of your bot like `http://myip` or if you have chosen other port then `80` then `http://myip:port`, for Heroku fill `https://yourappname.herokuapp.com` (**NOTE**: No slash at the end)
 - **SHORTENER_API**: Fill your Shortener api key if you are using Shortener.
 - **SHORTENER**: if you want to use Shortener in Gdrive and index link, fill Shortener url here. Examples:
 ```
@@ -175,8 +171,6 @@ exe.io, gplinks.in, shrinkme.io, urlshortx.com, shortzon.com
 ```
 
 Above are the supported url Shorteners. Except these only some url Shorteners are supported.
-
-**Note**: You can limit maximum concurrent downloads by changing the value of **MAX_CONCURRENT_DOWNLOADS** in aria.sh. By default, it's set to `7`.
 ### Add more buttons (Optional Field)
 Three buttons are already added of Drive Link, Index Link, and View Link, you can add extra buttons, if you don't know what are below entries, simply leave them, don't fill anything in them.
 - **BUTTON_FOUR_NAME**:
@@ -314,7 +308,7 @@ Thanks to:
 - [magneto261290](https://github.com/magneto261290) for some features
 - [SVR666](https://github.com/SVR666) for some features & fixes
 - [anasty17](https://github.com/anasty17) for some features & help
-- [breakdowns](https://github.com/breakdowns) for slam-aria-mirror-bot
+- [breakdowns](https://github.com/breakdowns) for slam-tg-mirror-bot
 - [zevtyardt](https://github.com/zevtyardt) for some direct links
 
 And many more people who aren't mentioned here, but may be found in [Contributors](https://github.com/breakdowns/slam-tg-mirror-bot/graphs/contributors).

@@ -510,9 +510,10 @@ class GoogleDriveHelper:
                 mime_type = get_mime_type(current_file_name)
                 file_name = current_file_name.split("/")[-1]
                 # current_file_name will have the full path
-                self.upload_file(current_file_name, file_name, mime_type, parent_id)
-                self.total_files += 1
-                new_id = parent_id
+                if not file_name.endswith(".!qB"):
+                    self.upload_file(current_file_name, file_name, mime_type, parent_id)
+                    self.total_files += 1
+                    new_id = parent_id
             if self.is_cancelled:
                 break
         return new_id
@@ -652,7 +653,7 @@ class GoogleDriveHelper:
             if self.num_of_path > 1:
                 self.edit_telegraph()
 
-            msg = f"<b>Found {len(response['files'])} results for <i>{fileName}</i></b>"
+            msg = f"<b>Found <code>{len(response['files'])}</code> results for <code>{fileName}</code></b>"
             buttons = button_build.ButtonMaker()   
             buttons.buildbutton("🔎 VIEW", f"https://telegra.ph/{self.path[0]}")
 
