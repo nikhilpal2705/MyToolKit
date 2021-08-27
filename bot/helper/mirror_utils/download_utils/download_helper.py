@@ -25,3 +25,4 @@ class DownloadHelper:
     def cancel_download(self):
         # Returns None if successfully cancelled, else error string
         raise MethodNotImplementedError
+© 2021 GitHub, Inc.
