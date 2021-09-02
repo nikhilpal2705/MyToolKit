@@ -15,23 +15,21 @@
     <summary><b>Click Here For More Details</b></summary>
 
 ## Additional Features
-- Qbittorrent supported
-- Limiting size Torrent/Direct, Tar/Unzip, Mega, cloning Google Drive support
-- Stop duplicate cloning Google Drive & mirroring Mega support
+- Qbittorrent
+- Size limiting for Torrent/Direct, Tar/Unzip, Mega and clone
+- Stop duplicate for all except qbittorrent tasks and youtube-dl
 - Tar/Unzip Google Drive link support
-- Select files from Torrent before downloading
-- Sudo with Database support
+- Select files from Torrent before downloading using qbittorrent
+- Sudo with or without Database
 - Multiple Trackers support
 - Extracting **tar.xz** support
 - Counting Google Drive link
 - View Link button
 - Shell and Executor
 - Speedtest
-- Torrent search Supported:
-```
-nyaa.si, sukebei, 1337x, piratebay,
-tgx, yts, eztv, torlock, rarbg
-```
+- Status Pages for unlimited tasks
+- Clone status
+- Many bugs has been fixed
 - Direct links Supported:
 ```
 letsupload.io, hxfile.co, anonfiles.com, bayfiles.com, antfiles,
@@ -42,7 +40,7 @@ streamtape.com, streamsb.net, feurl.com, pixeldrain.com, racaty.net,
 uptobox.com (Uptobox account must be premium), solidfiles.com
 ```
 
-## From Original Repos
+## From Original and Other Repos
 - Mirroring direct download links, Torrent, and Telegram files to Google Drive
 - Mirroring Mega.nz links to Google Drive (If your Mega account not premium, it will limit 5GB/6 hours)
 - Copy files from someone's Drive to your Drive (Using Autorclone)
@@ -83,7 +81,9 @@ For Debian based distros
 ```
 sudo apt install python3
 ```
-Install Docker by following the [official Docker docs](https://docs.docker.com/engine/install/debian/), or:
+Install Docker by following the [official Docker docs](https://docs.docker.com/engine/install/debian/)
+
+OR
 ```
 sudo snap install docker 
 ```
@@ -100,17 +100,17 @@ pip3 install -r requirements-cli.txt
     <summary><b>Click Here For More Details</b></summary>
 
 **1. Using ElephantSQL**
-- Go to https://elephantsql.com/ and create account (skip this if you already have ElephantSQL account)
-- Hit **Create New Instance**
+- Go to https://elephantsql.com and create account (skip this if you already have **ElephantSQL** account)
+- Hit `Create New Instance`
 - Follow the further instructions in the screen
-- Hit **Select Region**
-- Hit **Review**
-- Hit **Create instance**
+- Hit `Select Region`
+- Hit `Review`
+- Hit `Create instance`
 - Select your database name
 - Copy your database url, and fill to `DATABASE_URL` in config
 
 **2. Using Heroku PostgreSQL**
-<p><a href="https://dev.to/prisma/how-to-setup-a-free-postgresql-database-on-heroku-1dc1"> <img src="https://img.shields.io/badge/See%20Dev.to-black?style=for-the-badge&logo=dev.to" width="170""/></a></p>
+<p><a href="https://dev.to/prisma/how-to-setup-a-free-postgresql-database-on-heroku-1dc1"> <img src="https://img.shields.io/badge/See%20Dev.to-black?style=for-the-badge&logo=dev.to" width="160""/></a></p>
 
 </details>
 
@@ -134,7 +134,7 @@ Fill up rest of the fields. Meaning of each fields are discussed below:
 - `GDRIVE_FOLDER_ID`: This is the folder ID of the Google Drive Folder to which you want to upload all the mirrors.
 - `DOWNLOAD_DIR`: The path to the local folder where the downloads should be downloaded to
 - `DOWNLOAD_STATUS_UPDATE_INTERVAL`: A short interval of time in seconds after which the Mirror progress message is updated. (I recommend to keep it `5` seconds at least)  
-- `AUTO_DELETE_MESSAGE_DURATION`: Interval of time (in seconds), after which the bot deletes it's message (and command message) which is expected to be viewed instantly. (**Note**: Set to `-1` to never automatically delete messages)
+- `AUTO_DELETE_MESSAGE_DURATION`: Interval of time (in seconds), after which the bot deletes it's message (and command message) which is expected to be viewed instantly. (**NOTE**: Set to `-1` to never automatically delete messages)
 ### Optional Field
 - `ACCOUNTS_ZIP_URL`: Only if you want to load your Service Account externally from an Index Link. Archive the accounts folder to a zip file. Fill this with the direct link of that file.
 - `TOKEN_PICKLE_URL`: Only if you want to load your **token.pickle** externally from an Index Link. Fill this with the direct link of that file.
@@ -149,12 +149,12 @@ Fill up rest of the fields. Meaning of each fields are discussed below:
 - `MEGA_PASSWORD`: Your password for your mega.nz account
 - `BLOCK_MEGA_FOLDER`: If you want to remove mega.nz folder support, set it to `True`.
 - `BLOCK_MEGA_LINKS`: If you want to remove mega.nz mirror support, set it to `True`.
-- `STOP_DUPLICATE`: (Leave empty if unsure) if this field is set to `True`, bot will check file in Drive, if it is present in Drive, downloading or cloning will be stopped. (**Note**: File will be checked using filename, not using filehash, so this feature is not perfect yet)
+- `STOP_DUPLICATE`: (Leave empty if unsure) if this field is set to `True`, bot will check file in Drive, if it is present in Drive, downloading or cloning will be stopped. (**NOTE**: File will be checked using filename, not using filehash, so this feature is not perfect yet)
 - `CLONE_LIMIT`: To limit cloning Google Drive (leave space between number and unit, Available units is (gb or GB, tb or TB), Examples: `100 gb, 100 GB, 10 tb, 10 TB`
 - `MEGA_LIMIT`: To limit downloading Mega (leave space between number and unit, Available units is (gb or GB, tb or TB), Examples: `100 gb, 100 GB, 10 tb, 10 TB`
 - `TORRENT_DIRECT_LIMIT`: To limit the Torrent/Direct mirror size, Leave space between number and unit. Available units is (gb or GB, tb or TB), Examples: `100 gb, 100 GB, 10 tb, 10 TB`
 - `TAR_UNZIP_LIMIT`: To limit mirroring as Tar or unzipmirror. Available units is (gb or GB, tb or TB), Examples: `100 gb, 100 GB, 10 tb, 10 TB`
-- `VIEW_LINK`: View Link button to open file Index Link in browser instead of direct download link, you can figure out if it's compatible with your Index code or not, open any video from you Index and check if the END of link from browser link bar is `?a=view`, if yes make it `True` it will work (Compatible with [Bhadoo Index](https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index) Code)
+- `VIEW_LINK`: View Link button to open file Index Link in browser instead of direct download link, you can figure out if it's compatible with your Index code or not, open any video from you Index and check if the END of link from browser link bar is `?a=view`, if yes make it `True` it will work (Compatible with https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index Code)
 - `UPTOBOX_TOKEN`: Uptobox token to mirror uptobox links. Get it from [Uptobox Premium Account](https://uptobox.com/my_account).
 - `HEROKU_EMAIL`: Heroku Account email Id in which the above app will be deployed (**NOTE**: Only needed if you deploying on Heroku with Github Workflow).
 - `HEROKU_API_KEY`: (Only if you deploying on Heroku) Your Heroku API key, get it from https://dashboard.heroku.com/account.
@@ -163,7 +163,7 @@ Fill up rest of the fields. Meaning of each fields are discussed below:
 - `STATUS_LIMIT`: Status limit with buttons (**NOTE**: Recommend limit status to `4` tasks max).
 - `IS_VPS`: (Only for VPS) Don't set this to `True` even if you are using VPS, unless facing error with web server. Also go to start.sh and replace `$PORT` by `80` or any port you want to use.
 - `SERVER_PORT`: (Only if IS_VPS is `True`) Base URL Port
-- `BASE_URL_OF_BOT`: (Required for Heroku) Valid BASE URL of where the bot is deploy. Ip/domain of your bot like `http://myip` or if you have chosen other port then `80` then `http://myip:port`, for Heroku fill `https://yourappname.herokuapp.com` (**NOTE**: No slash at the end)
+- `BASE_URL_OF_BOT`: (Required for Heroku to avoid sleep) Valid BASE URL of where the bot is deploy. Ip/domain of your bot like `http://myip` or if you have chosen other port then `80` then `http://myip:port`, for Heroku fill `https://yourappname.herokuapp.com` (**NOTE**: No slash at the end), still got idling? You can use http://cron-job.org to ping your Heroku app.
 - `SHORTENER_API`: Fill your Shortener api key if you are using Shortener.
 - `SHORTENER`: if you want to use Shortener in Gdrive and index link, fill Shortener url here. Examples:
 ```
@@ -197,7 +197,9 @@ pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib
 python3 generate_drive_token.py
 ```
 
-## Deploying
+## Deploy On VPS
+
+**IMPORTANT NOTE**: In start.sh you must replace `$PORT` with 80 or any other port you want to use
 
 - Start Docker daemon (skip if already running):
 ```
@@ -205,22 +207,60 @@ sudo dockerd
 ```
 - Build Docker image:
 ```
-docker build . --rm --force-rm --compress --no-cache=true --pull --file Dockerfile -t mirrorbot
+sudo docker build . -t mirror-bot
 ```
 - Run the image:
 ```
-sudo docker run mirrorbot
+sudo docker run -p 80:80 mirror-bot
 ```
+OR
+
+**NOTE**: If you want to use port other than 80, so change it in [docker-compose.yml](https://github.com/SlamDevs/slam-mirrorbot/blob/master/docker-compose.yml)
+
+- Using Docker-compose so you can edit and build your image in seconds:
+```
+sudo apt install docker-compose
+```
+- Build and run Docker image:
+```
+sudo docker-compose up
+```
+- After edit files with nano for example (nano start.sh):
+```
+sudo docker-compose build
+sudo docker-compose up
+```
+OR
+```
+sudo docker-compose up --build
+```
+- To stop Docker run 
+```
+sudo docker ps
+```
+```
+sudo docker stop id
+```
+- To clear the container (this will not effect on image):
+```
+sudo docker container prune
+```
+- To delete the image:
+```
+sudo docker image prune -a
+```
+- Video from Tortoolkit repo
+<p><a href="https://youtu.be/c8_TU1sPK08"> <img src="https://img.shields.io/badge/See%20Video-black?style=for-the-badge&logo=YouTube" width="160""/></a></p>
 
 ## Deploying on Heroku
 - Deploying on Heroku with Github Workflow
-<p><a href="https://github.com/SlamDevs/slam-mirrorbot/blob/master/heroku-guide.md"> <img src="https://img.shields.io/badge/Deploy%20Guide-blueviolet?style=for-the-badge&logo=heroku" width="170""/></a></p>
+<p><a href="https://github.com/SlamDevs/slam-mirrorbot/wiki/Deploying-slam-mirrorbot-on-Heroku-with-Github-Workflows"> <img src="https://img.shields.io/badge/Deploy%20Guide-blueviolet?style=for-the-badge&logo=heroku" width="170""/></a></p>
 
 - Deploying on Heroku with heroku-cli and Goorm IDE
 <p><a href="https://telegra.ph/How-to-Deploy-a-Mirror-Bot-to-Heroku-with-CLI-05-06"> <img src="https://img.shields.io/badge/Deploy%20Guide-grey?style=for-the-badge&logo=telegraph" width="170""/></a></p>
 
 # Using Service Accounts for uploading to avoid user rate limit
-For Service Account to work, you must set `USE_SERVICE_ACCOUNTS`="True" in config file or environment variables, 
+For Service Account to work, you must set `USE_SERVICE_ACCOUNTS` = "True" in config file or environment variables, 
 Many thanks to [AutoRClone](https://github.com/xyou365/AutoRclone) for the scripts.
 **NOTE**: Using Service Accounts is only recommended while uploading to a Team Drive.
 

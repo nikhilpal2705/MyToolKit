@@ -5,6 +5,7 @@
 from bot import DOWNLOAD_DIR, LOGGER, get_client
 from bot.helper.ext_utils.bot_utils import MirrorStatus, get_readable_file_size, get_readable_time
 from .status import Status
+from time import sleep
 
 
 class QbDownloadStatus(Status):
@@ -54,14 +55,13 @@ class QbDownloadStatus(Status):
     def status(self):
         download = self.torrent_info().state
         if download == "queuedDL":
-            status = MirrorStatus.STATUS_WAITING
-        elif download == "metaDL" or download == "checkingResumeData":
-            status = MirrorStatus.STATUS_DOWNLOADING + " (Metadata)"
+            return MirrorStatus.STATUS_WAITING
+        elif download in ["metaDL", "checkingResumeData"]:
+            return MirrorStatus.STATUS_DOWNLOADING + " (Metadata)"
         elif download == "pausedDL":
-            status = MirrorStatus.STATUS_PAUSE
+            return MirrorStatus.STATUS_PAUSE
         else:
-            status = MirrorStatus.STATUS_DOWNLOADING
-        return status
+            return MirrorStatus.STATUS_DOWNLOADING
 
     def torrent_info(self):
         return self.client.torrents_info(torrent_hashes=self.__hash)[0]
@@ -77,5 +77,7 @@ class QbDownloadStatus(Status):
 
     def cancel_download(self):
         LOGGER.info(f"Cancelling Download: {self.name()}")
+        self.client.torrents_pause(torrent_hashes=self.__hash)
+        sleep(0.3)
         self.listener.onDownloadError('Download stopped by user!')
-        self.client.torrents_delete(torrent_hashes=self.__hash, delete_files=True)
+        self.client.torrents_delete(torrent_hashes=self.__hash)

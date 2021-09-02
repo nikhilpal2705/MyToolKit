@@ -10,7 +10,7 @@ from .exceptions import NotSupportedExtractionArchive
 
 def clean_download(path: str):
     if os.path.exists(path):
-        LOGGER.info(f"Cleaning download: {path}")
+        LOGGER.info(f"Cleaning Download: {path}")
         shutil.rmtree(path)
 
 
@@ -24,6 +24,7 @@ def start_cleanup():
 def clean_all():
     aria2.remove_all(True)
     get_client().torrents_delete(torrent_hashes="all", delete_files=True)
+    get_client().auth_log_out()
     try:
         shutil.rmtree(DOWNLOAD_DIR)
     except FileNotFoundError:
@@ -152,5 +153,5 @@ def get_base_name(orig_path: str):
 def get_mime_type(file_path):
     mime = magic.Magic(mime=True)
     mime_type = mime.from_file(file_path)
-    mime_type = mime_type if mime_type else "text/plain"
+    mime_type = mime_type or "text/plain"
     return mime_type
