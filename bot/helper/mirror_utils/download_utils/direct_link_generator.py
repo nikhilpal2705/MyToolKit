@@ -8,34 +8,33 @@ from https://github.com/AvinashReddy3108/PaperplaneExtended . I hereby take no c
 than the modifications. See https://github.com/AvinashReddy3108/PaperplaneExtended/commits/master/userbot/modules/direct_links.py
 for original authorship. """
 
-from bot import LOGGER, UPTOBOX_TOKEN
-import json
-import math
+import requests
 import re
-import urllib.parse
-from os import popen
-from random import choice
-from urllib.parse import urlparse
 
-import lk21
-import requests, cfscrape
+from urllib.parse import urlparse, unquote
+from json import loads as jsnloads
+from lk21 import Bypass
+from cfscrape import create_scraper
 from bs4 import BeautifulSoup
-from js2py import EvalJs
-from lk21.extractors.bypasser import Bypass
 from base64 import standard_b64encode
+
+from bot import LOGGER, UPTOBOX_TOKEN, PHPSESSID, CRYPT
 from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot.helper.ext_utils.bot_utils import is_gdtot_link
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
+
+cookies = {"PHPSESSID": PHPSESSID, "crypt": CRYPT}
+fmed_list = ['fembed.net', 'fembed.com', 'femax20.com', 'fcdn.stream', 'feurl.com', 'layarkacaxxi.icu',
+             'naniplay.nanime.in', 'naniplay.nanime.biz', 'naniplay.com', 'mm9842.com']
 
 
 def direct_link_generator(link: str):
     """ direct links generator """
-    if not link:
-        raise DirectDownloadLinkException("No links found!")
-    elif 'youtube.com' in link or 'youtu.be' in link:
-        raise DirectDownloadLinkException(f"Use /{BotCommands.WatchCommand} to mirror Youtube link\nUse /{BotCommands.TarWatchCommand} to make tar of Youtube playlist")
+    if 'youtube.com' in link or 'youtu.be' in link:
+        raise DirectDownloadLinkException(f"ERROR: Use /{BotCommands.WatchCommand} to mirror Youtube link\nUse /{BotCommands.ZipWatchCommand} to make zip of Youtube playlist")
     elif 'zippyshare.com' in link:
         return zippy_share(link)
-    elif 'yadi.sk' in link:
+    elif 'yadi.sk' in link or 'disk.yandex.com' in link:
         return yandex_disk(link)
     elif 'mediafire.com' in link:
         return mediafire(link)
@@ -51,30 +50,6 @@ def direct_link_generator(link: str):
         return anonfiles(link)
     elif 'letsupload.io' in link:
         return letsupload(link)
-    elif 'fembed.net' in link:
-        return fembed(link)
-    elif 'fembed.com' in link:
-        return fembed(link)
-    elif 'femax20.com' in link:
-        return fembed(link)
-    elif 'fcdn.stream' in link:
-        return fembed(link)
-    elif 'feurl.com' in link:
-        return fembed(link)
-    elif 'naniplay.nanime.in' in link:
-        return fembed(link)
-    elif 'naniplay.nanime.biz' in link:
-        return fembed(link)
-    elif 'naniplay.com' in link:
-        return fembed(link)
-    elif 'layarkacaxxi.icu' in link:
-        return fembed(link)
-    elif 'sbembed.com' in link:
-        return sbembed(link)
-    elif 'streamsb.net' in link:
-        return sbembed(link)
-    elif 'sbplay.org' in link:
-        return sbembed(link)
     elif '1drv.ms' in link:
         return onedrive(link)
     elif 'pixeldrain.com' in link:
@@ -91,42 +66,58 @@ def direct_link_generator(link: str):
         return fichier(link)
     elif 'solidfiles.com' in link:
         return solidfiles(link)
+    elif 'krakenfiles.com' in link:
+        return krakenfiles(link)
+    elif is_gdtot_link(link):
+        return gdtot(link)
+    elif any(x in link for x in fmed_list):
+        return fembed(link)
+    elif any(x in link for x in ['sbembed.com', 'watchsb.com', 'streamsb.net', 'sbplay.org']):
+        return sbembed(link)
     else:
         raise DirectDownloadLinkException(f'No Direct link function found for {link}')
 
-
 def zippy_share(url: str) -> str:
-    """ ZippyShare direct links generator
+    """ ZippyShare direct link generator
     Based on https://github.com/KenHV/Mirror-Bot
              https://github.com/jovanzers/WinTenCermin """
     try:
         link = re.findall(r'\bhttps?://.*zippyshare\.com\S+', url)[0]
     except IndexError:
-        raise DirectDownloadLinkException("No Zippyshare links found")
+        raise DirectDownloadLinkException("ERROR: No Zippyshare links found")
     try:
-        base_url = re.search('http.+.zippyshare.com', link).group()
+        base_url = re.search('http.+.zippyshare.com/', link).group()
         response = requests.get(link).content
         pages = BeautifulSoup(response, "lxml")
         try:
-            js_script = pages.find("div", {"class": "center"}).find_all("script")[1]
+            js_script = pages.find("div", {"class": "center"})
+            if js_script is not None:
+                js_script = js_script.find_all("script")[1]
+            else:
+                raise DirectDownloadLinkException("ERROR: No Zippyshare links found")
         except IndexError:
-            js_script = pages.find("div", {"class": "right"}).find_all("script")[0]
+            js_script = pages.find("div", {"class": "right"})
+            if js_script is not None:
+                js_script = js_script.find_all("script")[0]
+            else:
+                raise DirectDownloadLinkException("ERROR: No Zippyshare links found")
         js_content = re.findall(r'\.href.=."/(.*?)";', str(js_script))
-        js_content = 'var x = "/' + js_content[0] + '"'
-        evaljs = EvalJs()
-        setattr(evaljs, "x", None)
-        evaljs.execute(js_content)
-        js_content = getattr(evaljs, "x")
-        return base_url + js_content
+        js_content = str(js_content[0]).split('"')
+        n = str(js_script).split('var n = ')[1].split(';')[0].split('%')
+        n = int(n[0]) % int(n[1])
+        b = str(js_script).split('var b = ')[1].split(';')[0].split('%')
+        b = int(b[0]) % int(b[1])
+        z = int(str(js_script).split('var z = ')[1].split(';')[0])
+        math_ = str(n + b + z - 3)
+        return base_url + str(js_content[0]) + math_ + str(js_content[2])
     except IndexError:
         raise DirectDownloadLinkException("ERROR: Can't find download button")
 
-
 def yandex_disk(url: str) -> str:
-    """ Yandex.Disk direct links generator
+    """ Yandex.Disk direct link generator
     Based on https://github.com/wldhx/yadisk-direct """
     try:
-        link = re.findall(r'\bhttps?://.*yadi\.sk\S+', url)[0]
+        link = re.findall(r'\b(https?://(yadi.sk|disk.yandex.com)\S+)', url)[0][0]
     except IndexError:
         return "No Yandex.Disk links found\n"
     api = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key={}'
@@ -135,9 +126,8 @@ def yandex_disk(url: str) -> str:
     except KeyError:
         raise DirectDownloadLinkException("ERROR: File not found/Download limit reached\n")
 
-
 def uptobox(url: str) -> str:
-    """ Uptobox direct links generator
+    """ Uptobox direct link generator
     based on https://github.com/jovanzers/WinTenCermin """
     try:
         link = re.findall(r'\bhttps?://.*uptobox\.com\S+', url)[0]
@@ -158,9 +148,8 @@ def uptobox(url: str) -> str:
             dl_url = result['data']['dlLink']
     return dl_url
 
-
 def mediafire(url: str) -> str:
-    """ MediaFire direct links generator """
+    """ MediaFire direct link generator """
     try:
         link = re.findall(r'\bhttps?://.*mediafire\.com\S+', url)[0]
     except IndexError:
@@ -169,9 +158,8 @@ def mediafire(url: str) -> str:
     info = page.find('a', {'aria-label': 'Download file'})
     return info.get('href')
 
-
 def osdn(url: str) -> str:
-    """ OSDN direct links generator """
+    """ OSDN direct link generator """
     osdn_link = 'https://osdn.net'
     try:
         link = re.findall(r'\bhttps?://.*osdn\.net\S+', url)[0]
@@ -180,14 +168,13 @@ def osdn(url: str) -> str:
     page = BeautifulSoup(
         requests.get(link, allow_redirects=True).content, 'lxml')
     info = page.find('a', {'class': 'mirror_link'})
-    link = urllib.parse.unquote(osdn_link + info['href'])
+    link = unquote(osdn_link + info['href'])
     mirrors = page.find('form', {'id': 'mirror-select-form'}).findAll('tr')
     urls = []
     for data in mirrors[1:]:
         mirror = data.find('input')['value']
         urls.append(re.sub(r'm=(.*)&f', f'm={mirror}&f', link))
     return urls[0]
-
 
 def github(url: str) -> str:
     """ GitHub direct links generator """
@@ -201,58 +188,52 @@ def github(url: str) -> str:
     except KeyError:
         raise DirectDownloadLinkException("ERROR: Can't extract the link\n")
 
-
 def hxfile(url: str) -> str:
     """ Hxfile direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/SlamDevs/slam-mirrorbot """
-    bypasser = lk21.Bypass()
+    """
+    bypasser = Bypass()
     return bypasser.bypass_filesIm(url)
-
 
 def anonfiles(url: str) -> str:
     """ Anonfiles direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/SlamDevs/slam-mirrorbot """
-    bypasser = lk21.Bypass()
+    """
+    bypasser = Bypass()
     return bypasser.bypass_anonfiles(url)
-
 
 def letsupload(url: str) -> str:
     """ Letsupload direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/SlamDevs/slam-mirrorbot """
+    """
     dl_url = ''
     try:
         link = re.findall(r'\bhttps?://.*letsupload\.io\S+', url)[0]
     except IndexError:
         raise DirectDownloadLinkException("No Letsupload links found\n")
-    bypasser = lk21.Bypass()
+    bypasser = Bypass()
     dl_url=bypasser.bypass_url(link)
     return dl_url
-
 
 def fembed(link: str) -> str:
     """ Fembed direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/SlamDevs/slam-mirrorbot """
-    bypasser = lk21.Bypass()
+    """
+    bypasser = Bypass()
     dl_url=bypasser.bypass_fembed(link)
     count = len(dl_url)
     lst_link = [dl_url[i] for i in dl_url]
     return lst_link[count-1]
 
-
 def sbembed(link: str) -> str:
     """ Sbembed direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/SlamDevs/slam-mirrorbot """
-    bypasser = lk21.Bypass()
+    """
+    bypasser = Bypass()
     dl_url=bypasser.bypass_sbembed(link)
     count = len(dl_url)
     lst_link = [dl_url[i] for i in dl_url]
     return lst_link[count-1]
-
 
 def onedrive(link: str) -> str:
     """ Onedrive direct link generator
@@ -262,12 +243,11 @@ def onedrive(link: str) -> str:
     direct_link1 = f"https://api.onedrive.com/v1.0/shares/u!{direct_link_encoded}/root/content"
     resp = requests.head(direct_link1)
     if resp.status_code != 302:
-        return "ERROR: Unauthorized link, the link may be private"
+        raise DirectDownloadLinkException("ERROR: Unauthorized link, the link may be private")
     dl_link = resp.next.url
     file_name = dl_link.rsplit("/", 1)[1]
     resp2 = requests.head(dl_link)
     return dl_link
-
 
 def pixeldrain(url: str) -> str:
     """ Based on https://github.com/yash-dk/TorToolkit-Telegram """
@@ -279,34 +259,31 @@ def pixeldrain(url: str) -> str:
     if resp["success"]:
         return dl_link
     else:
-        raise DirectDownloadLinkException("ERROR: Cant't download due {}.".format(resp.text["value"]))
-
+        raise DirectDownloadLinkException("ERROR: Cant't download due {}.".format(resp["message"]))
 
 def antfiles(url: str) -> str:
     """ Antfiles direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/SlamDevs/slam-mirrorbot """
-    bypasser = lk21.Bypass()
+    """
+    bypasser = Bypass()
     return bypasser.bypass_antfiles(url)
-
 
 def streamtape(url: str) -> str:
     """ Streamtape direct link generator
     Based on https://github.com/zevtyardt/lk21
-             https://github.com/SlamDevs/slam-mirrorbot """
-    bypasser = lk21.Bypass()
+    """
+    bypasser = Bypass()
     return bypasser.bypass_streamtape(url)
 
-
 def racaty(url: str) -> str:
-    """ Racaty direct links generator
-    based on https://github.com/SlamDevs/slam-mirrorbot """
+    """ Racaty direct link generator
+    based on https://github.com/SlamDevs/slam-mirrorbot"""
     dl_url = ''
     try:
         link = re.findall(r'\bhttps?://.*racaty\.net\S+', url)[0]
     except IndexError:
         raise DirectDownloadLinkException("No Racaty links found\n")
-    scraper = cfscrape.create_scraper()
+    scraper = create_scraper()
     r = scraper.get(url)
     soup = BeautifulSoup(r.text, "lxml")
     op = soup.find("input", {"name": "op"})["value"]
@@ -316,11 +293,10 @@ def racaty(url: str) -> str:
     dl_url = rsoup.find("a", {"id": "uniqueExpirylink"})["href"].replace(" ", "%20")
     return dl_url
 
-
 def fichier(link: str) -> str:
-    """ 1Fichier direct links generator
+    """ 1Fichier direct link generator
     Based on https://github.com/Maujar
-             https://github.com/SlamDevs/slam-mirrorbot """
+    """
     regex = r"^([http:\/\/|https:\/\/]+)?.*1fichier\.com\/\?.+"
     gan = re.match(regex, link)
     if not gan:
@@ -376,9 +352,8 @@ def fichier(link: str) -> str:
     else:
         raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
 
-
 def solidfiles(url: str) -> str:
-    """ Solidfiles direct links generator
+    """ Solidfiles direct link generator
     Based on https://github.com/Xonshiz/SolidFiles-Downloader
     By https://github.com/Jusidama18 """
     headers = {
@@ -386,17 +361,79 @@ def solidfiles(url: str) -> str:
     }
     pageSource = requests.get(url, headers = headers).text
     mainOptions = str(re.search(r'viewerOptions\'\,\ (.*?)\)\;', pageSource).group(1))
-    return json.loads(mainOptions)["downloadUrl"]
+    return jsnloads(mainOptions)["downloadUrl"]
 
+def krakenfiles(page_link: str) -> str:
+    """ krakenfiles direct link generator
+    Based on https://github.com/tha23rd/py-kraken
+    By https://github.com/junedkh """
+    page_resp = requests.session().get(page_link)
+    soup = BeautifulSoup(page_resp.text, "lxml")
+    try:
+        token = soup.find("input", id="dl-token")["value"]
+    except:
+        raise DirectDownloadLinkException(f"Page link is wrong: {page_link}")
 
-def useragent():
-    """
-    useragent random setter
-    """
-    useragents = BeautifulSoup(
-        requests.get(
-            'https://developers.whatismybrowser.com/'
-            'useragents/explore/operating_system_name/android/').content,
-        'lxml').findAll('td', {'class': 'useragent'})
-    user_agent = choice(useragents)
-    return user_agent.text
+    hashes = [
+        item["data-file-hash"]
+        for item in soup.find_all("div", attrs={"data-file-hash": True})
+    ]
+    if not hashes:
+        raise DirectDownloadLinkException(
+            f"Hash not found for : {page_link}")
+
+    dl_hash = hashes[0]
+
+    payload = f'------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="token"\r\n\r\n{token}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--'
+    headers = {
+        "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
+        "cache-control": "no-cache",
+        "hash": dl_hash,
+    }
+
+    dl_link_resp = requests.session().post(
+        f"https://krakenfiles.com/download/{hash}", data=payload, headers=headers)
+
+    dl_link_json = dl_link_resp.json()
+
+    if "url" in dl_link_json:
+        return dl_link_json["url"]
+    else:
+        raise DirectDownloadLinkException(
+            f"Failed to acquire download URL from kraken for : {page_link}")
+
+def gdtot(url: str) -> str:
+    """ Gdtot google drive link generator
+    By https://github.com/oxosec """
+
+    if CRYPT is None:
+        raise DirectDownloadLinkException("ERROR: PHPSESSID and CRYPT variables not provided")
+
+    headers = {'upgrade-insecure-requests': '1',
+               'save-data': 'on',
+               'user-agent': 'Mozilla/5.0 (Linux; Android 10; Redmi 8A Dual) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Mobile Safari/537.36',
+               'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+               'sec-fetch-site': 'same-origin',
+               'sec-fetch-mode': 'navigate',
+               'sec-fetch-dest': 'document',
+               'referer': '',
+               'prefetchAd_3621940': 'true',
+               'accept-language': 'en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7'}
+
+    r1 = requests.get(url, headers=headers, cookies=cookies).content
+    s1 = BeautifulSoup(r1, 'html.parser').find('button', id="down")
+    if s1 is not None:
+        s1 = s1.get('onclick').split("'")[1]
+    else:
+        raise DirectDownloadLinkException("ERROR: Check Your GDTot Link Maybe Not Found !")
+    headers['referer'] = url
+    s2 = BeautifulSoup(requests.get(s1, headers=headers, cookies=cookies).content, 'html.parser').find('meta').get('content').split('=',1)[1]
+    headers['referer'] = s1
+    s3 = BeautifulSoup(requests.get(s2, headers=headers, cookies=cookies).content, 'html.parser').find('div', align="center")
+    if s3 is not None:
+        return s3.find('a', class_="btn btn-outline-light btn-user font-weight-bold").get('href')
+
+    s3 = BeautifulSoup(requests.get(s2, headers=headers, cookies=cookies).content, 'html.parser')
+    status = s3.find('h4').text
+    raise DirectDownloadLinkException(f"ERROR: {status}")
+

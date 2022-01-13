@@ -1,17 +1,17 @@
 aiohttp
 anytree
-aria2p
 appdirs
+aria2p
+asgiref
 attrdict
 beautifulsoup4
-cloudscrape
+cfscrape
 feedparser
+gc-python-utils
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 gunicorn
-hachoir
-js2py
 lk21
 lxml
 pillow
@@ -31,4 +31,4 @@ tenacity
 TgCrypto
 torrentool==1.1.0
 urllib3
-youtube_dl
+yt-dlp
