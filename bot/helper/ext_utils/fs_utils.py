@@ -1,15 +1,15 @@
-from os import remove as osremove, path as ospath, mkdir, walk
+from os import remove as osremove, path as ospath, mkdir, walk, listdir, rmdir, makedirs
 from sys import exit as sysexit
 from json import loads as jsnloads
-from shutil import rmtree
+from shutil import rmtree, disk_usage
 from PIL import Image
 from magic import Magic
-from subprocess import run, check_output
+from subprocess import run as srun, check_output
 from time import time
 from math import ceil
 
 from .exceptions import NotSupportedExtractionArchive
-from bot import aria2, LOGGER, DOWNLOAD_DIR, get_client, TG_SPLIT_SIZE, EQUAL_SPLITS
+from bot import aria2, LOGGER, DOWNLOAD_DIR, get_client, TG_SPLIT_SIZE, EQUAL_SPLITS, STORAGE_THRESHOLD
 
 VIDEO_SUFFIXES = ("M4V", "MP4", "MOV", "FLV", "WMV", "3GP", "MPG", "WEBM", "MKV", "AVI")
 
@@ -26,10 +26,13 @@ def start_cleanup():
         rmtree(DOWNLOAD_DIR)
     except FileNotFoundError:
         pass
+    makedirs(DOWNLOAD_DIR)
 
 def clean_all():
     aria2.remove_all(True)
-    get_client().torrents_delete(torrent_hashes="all")
+    qbc = get_client()
+    qbc.torrents_delete(torrent_hashes="all", delete_files=True)
+    qbc.app_shutdown()
     try:
         rmtree(DOWNLOAD_DIR)
     except FileNotFoundError:
@@ -44,7 +47,20 @@ def exit_clean_up(signal, frame):
         LOGGER.warning("Force Exiting before the cleanup finishes!")
         sysexit(1)
 
-def get_path_size(path):
+def clean_unwanted(path: str):
+    LOGGER.info(f"Cleaning unwanted files/folders: {path}")
+    for dirpath, subdir, files in walk(path, topdown=False):
+        for filee in files:
+            if filee.endswith(".!qB") or filee.endswith('.parts') and filee.startswith('.'):
+                osremove(ospath.join(dirpath, filee))
+        for folder in subdir:
+            if folder == ".unwanted":
+                rmtree(ospath.join(dirpath, folder))
+    for dirpath, subdir, files in walk(path, topdown=False):
+        if not listdir(dirpath):
+            rmdir(dirpath)
+
+def get_path_size(path: str):
     if ospath.isfile(path):
         return ospath.getsize(path)
     total_size = 0
@@ -53,6 +69,20 @@ def get_path_size(path):
             abs_path = ospath.join(root, f)
             total_size += ospath.getsize(abs_path)
     return total_size
+
+def check_storage_threshold(size: int, arch=False, alloc=False):
+    if not alloc:
+        if not arch:
+            if disk_usage(DOWNLOAD_DIR).free - size < STORAGE_THRESHOLD * 1024**3:
+                return False
+        elif disk_usage(DOWNLOAD_DIR).free - (size * 2) < STORAGE_THRESHOLD * 1024**3:
+            return False
+    elif not arch:
+        if disk_usage(DOWNLOAD_DIR).free < STORAGE_THRESHOLD * 1024**3:
+            return False
+    elif disk_usage(DOWNLOAD_DIR).free - size < STORAGE_THRESHOLD * 1024**3:
+        return False
+    return True
 
 def get_base_name(orig_path: str):
     if orig_path.endswith(".tar.bz2"):
@@ -148,7 +178,7 @@ def take_ss(video_file):
         duration = 3
     duration = duration // 2
     try:
-        run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(duration),
+        srun(["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(duration),
                         "-i", video_file, "-vframes", "1", des_dir])
     except:
         return None
@@ -161,14 +191,14 @@ def take_ss(video_file):
 def split(path, size, file_, dirpath, split_size, start_time=0, i=1, inLoop=False):
     parts = ceil(size/TG_SPLIT_SIZE)
     if EQUAL_SPLITS and not inLoop:
-        split_size = ceil(size/parts)
+        split_size = ceil(size/parts) + 1000
     if file_.upper().endswith(VIDEO_SUFFIXES):
         base_name, extension = ospath.splitext(file_)
         split_size = split_size - 2500000
         while i <= parts :
             parted_name = "{}.part{}{}".format(str(base_name), str(i).zfill(3), str(extension))
             out_path = ospath.join(dirpath, parted_name)
-            run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i",
+            srun(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i",
                             path, "-ss", str(start_time), "-fs", str(split_size),
                             "-async", "1", "-strict", "-2", "-c", "copy", out_path])
             out_size = get_path_size(out_path)
@@ -185,7 +215,7 @@ def split(path, size, file_, dirpath, split_size, start_time=0, i=1, inLoop=Fals
             i = i + 1
     else:
         out_path = ospath.join(dirpath, file_ + ".")
-        run(["split", "--numeric-suffixes=1", "--suffix-length=3", f"--bytes={split_size}", path, out_path])
+        srun(["split", "--numeric-suffixes=1", "--suffix-length=3", f"--bytes={split_size}", path, out_path])
 
 def get_media_info(path):
     try:
