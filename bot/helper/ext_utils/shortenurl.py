@@ -33,13 +33,15 @@ def short_url(longurl):
         link = choice(linkvertise)
     elif "bitly.com" in SHORTENER:
         shorten_url = "https://api-ssl.bit.ly/v4/shorten"
-        params = {"long_url": longurl}
         headers = {"Authorization": f"Bearer {SHORTENER_API}"}
-        response = create_scraper().post(shorten_url, json=params, headers=headers).json()
+        response = create_scraper().post(shorten_url, json={"long_url": longurl}, headers=headers).json()
         link = response["link"]
     elif "ouo.io" in SHORTENER:
         disable_warnings()
         link = cget(f'http://ouo.io/api/{SHORTENER_API}?s={longurl}', verify=False).text
+    elif "adfoc.us" in SHORTENER:
+        disable_warnings()
+        link = cget(f'http://adfoc.us/api/?key={SHORTENER_API}&url={longurl}', verify=False).text
     else:
         link = cget(f'https://{SHORTENER}/api?api={SHORTENER_API}&url={quote(longurl)}&format=text').text
 
