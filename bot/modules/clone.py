@@ -40,20 +40,20 @@ def _clone(message, bot, multi=0):
     is_appdrive = True if "appdrive.in" in link else False
     if is_driveapp:
         try:
-            msg = sendMessage(f"Pʀᴏᴄᴇssɪɴɢ ᴅʀɪᴠᴇAᴘᴘ Lɪɴᴋ:-\n<code>{link}</code>", bot, update)
+            msg = sendMessage(f"Pʀᴏᴄᴇssɪɴɢ ᴅʀɪᴠᴇAᴘᴘ Lɪɴᴋ:-\n<code>{link}</code>", bot, message)
             link = appdrive_dl(link)
             deleteMessage(bot, msg)
         except DirectDownloadLinkException as e:
             deleteMessage(bot, msg)
-            return sendMessage(str(e), bot, update)
+            return sendMessage(str(e), bot, message)
     if is_appdrive:
         try:
-            msg = sendMessage(f"Pʀᴏᴄᴇssɪɴɢ Aᴘᴘᴅʀɪᴠᴇ Lɪɴᴋ:- \n<code>{link}</code>", bot, update)
+            msg = sendMessage(f"Pʀᴏᴄᴇssɪɴɢ Aᴘᴘᴅʀɪᴠᴇ Lɪɴᴋ:- \n<code>{link}</code>", bot, message)
             link = appdrive_dl(link)
             deleteMessage(bot, msg)
         except DirectDownloadLinkException as e:
             deleteMessage(bot, msg)
-            return sendMessage(str(e), bot, update)
+            return sendMessage(str(e), bot, message)
     if is_gdtot:
         try:
             msg = sendMessage(f"Processing: <code>{link}</code>", bot, message)
