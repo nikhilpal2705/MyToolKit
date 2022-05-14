@@ -10,6 +10,7 @@ for original authorship. """
 
 from requests import get as rget, head as rhead, post as rpost, Session as rsession
 from re import findall as re_findall, sub as re_sub, match as re_match, search as re_search
+from lxml import etree
 from base64 import b64decode
 from urllib.parse import urlparse, unquote
 from json import loads as jsnloads
@@ -18,7 +19,7 @@ from cfscrape import create_scraper
 from bs4 import BeautifulSoup
 from base64 import standard_b64encode
 
-from bot import LOGGER, UPTOBOX_TOKEN, CRYPT
+from bot import LOGGER, UPTOBOX_TOKEN, CRYPT, EMAIL, PWSSD, CLONE_LOACTION as GDRIVE_FOLDER_ID
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.ext_utils.bot_utils import is_gdtot_link
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
@@ -43,6 +44,8 @@ def direct_link_generator(link: str):
         return osdn(link)
     elif 'github.com' in link:
         return github(link)
+    elif 'appdrive.in' in link or 'driveapp.in' in link:
+        return appdrive_dl(link)    
     elif 'hxfile.co' in link:
         return hxfile(link)
     elif 'anonfiles.com' in link:
@@ -384,3 +387,73 @@ def gdtot(url: str) -> str:
     except:
         raise DirectDownloadLinkException("ERROR: Try in your broswer, mostly file not found or user limit exceeded!")
     return f'https://drive.google.com/open?id={decoded_id}'
+
+def appdrive_dl(url: str) -> str:
+    if EMAIL is None or PWSSD is None:
+        raise DirectDownloadLinkException("Appdrive Cred Is Not Given")
+    account = {'email': EMAIL, 'passwd': PWSSD}
+    client = requests.Session()
+    client.headers.update({
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
+    })
+    data = {
+        'email': account['email'],
+        'password': account['passwd']
+    }
+    client.post(f'https://{urlparse(url).netloc}/login', data=data)
+    data = {
+        'root_drive': '',
+        'folder': GDRIVE_FOLDER_ID
+    }
+    client.post(f'https://{urlparse(url).netloc}/account', data=data)
+    res = client.get(url)
+    key = re.findall('"key",\s+"(.*?)"', res.text)[0]
+    ddl_btn = etree.HTML(res.content).xpath("//button[@id='drc']")
+    info = re.findall('>(.*?)<\/li>', res.text)
+    info_parsed = {}
+    for item in info:
+        kv = [s.strip() for s in item.split(':', maxsplit = 1)]
+        info_parsed[kv[0].lower()] = kv[1] 
+    info_parsed = info_parsed
+    info_parsed['error'] = False
+    info_parsed['link_type'] = 'login' # direct/login
+    headers = {
+        "Content-Type": f"multipart/form-data; boundary={'-'*4}_",
+    }
+    data = {
+        'type': 1,
+        'key': key,
+        'action': 'original'
+    }
+    if len(ddl_btn):
+        info_parsed['link_type'] = 'direct'
+        data['action'] = 'direct'
+    while data['type'] <= 3:
+        boundary=f'{"-"*6}_'
+        data_string = ''
+        for item in data:
+             data_string += f'{boundary}\r\n'
+             data_string += f'Content-Disposition: form-data; name="{item}"\r\n\r\n{data[item]}\r\n'
+        data_string += f'{boundary}--\r\n'
+        gen_payload = data_string
+        try:
+            response = client.post(url, data=gen_payload, headers=headers).json()
+            break
+        except: data['type'] += 1
+    if 'url' in response:
+        info_parsed['gdrive_link'] = response['url']
+    elif 'error' in response and response['error']:
+        info_parsed['error'] = True
+        info_parsed['error_message'] = response['message']
+    else:
+        info_parsed['error'] = True
+        info_parsed['error_message'] = 'Something went wrong :('
+    if info_parsed['error']: return info_parsed
+    if urlparse(url).netloc == 'driveapp.in' and not info_parsed['error']:
+        res = client.get(info_parsed['gdrive_link'])
+        drive_link = etree.HTML(res.content).xpath("//a[contains(@class,'btn')]/@href")[0]
+        info_parsed['gdrive_link'] = drive_link
+    info_parsed['src_url'] = url
+    if info_parsed['error']:
+        raise DirectDownloadLinkException(f"{info_parsed['error_message']}")
+    return info_parsed["gdrive_link"]
