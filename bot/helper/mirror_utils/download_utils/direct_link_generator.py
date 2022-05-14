@@ -392,7 +392,7 @@ def appdrive_dl(url: str) -> str:
     if EMAIL is None or PWSSD is None:
         raise DirectDownloadLinkException("Appdrive Cred Is Not Given")
     account = {'email': EMAIL, 'passwd': PWSSD}
-    client = requests.Session()
+    client = rsession()
     client.headers.update({
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"
     })
@@ -407,9 +407,9 @@ def appdrive_dl(url: str) -> str:
     }
     client.post(f'https://{urlparse(url).netloc}/account', data=data)
     res = client.get(url)
-    key = re.findall('"key",\s+"(.*?)"', res.text)[0]
+    key = re_findall('"key",\s+"(.*?)"', res.text)[0]
     ddl_btn = etree.HTML(res.content).xpath("//button[@id='drc']")
-    info = re.findall('>(.*?)<\/li>', res.text)
+    info = re_findall('>(.*?)<\/li>', res.text)
     info_parsed = {}
     for item in info:
         kv = [s.strip() for s in item.split(':', maxsplit = 1)]
