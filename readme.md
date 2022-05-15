@@ -1,3 +1,5 @@
+**Note: Appdrive And Driveapp Support need some settings. Go to your appdrive/Driveapp account section and fo to "Drive Root & Folder Choose" then choose a shared drive Directly not a folder in a shared drive. Then u can clone big files easily**
+### Modded By [Rehan Singh](https://telegram.dog/theRay1).
 This is a Telegram Bot written in Python for mirroring files on the Internet to your Google Drive or Telegram. Based on [python-aria-mirror-bot](https://github.com/lzzy12/python-aria-mirror-bot)
 
 # Features:
