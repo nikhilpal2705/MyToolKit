@@ -11,50 +11,43 @@ from bot.helper.ext_utils.bot_utils import get_readable_file_size, is_url
 from bot.helper.mirror_utils.download_utils.youtube_dl_download_helper import YoutubeDLHelper
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-from .listener import MirrorLeechListener
+from .mirror import MirrorListener
 
 listener_dict = {}
 
-def _ytdl(bot, message, isZip=False, isLeech=False, multi=0):
+def _watch(bot, message, isZip=False, isLeech=False, multi=0):
     mssg = message.text
     user_id = message.from_user.id
     msg_id = message.message_id
 
-    link = mssg.split()
-    if len(link) > 1:
-        link = link[1].strip()
-        if link.strip().isdigit():
-            if multi == 0:
-                multi = int(link)
-            link = ''
-        elif link.strip().startswith(("|", "pswd:", "args:")):
-            link = ''
-    else:
+    try:
+        link = mssg.split(' ')[1].strip()
+        if link.isdigit():
+            multi = int(link)
+            raise IndexError
+        elif link.startswith(("|", "pswd:", "args:")):
+            raise IndexError
+    except:
         link = ''
-
-    name = mssg.split('|', maxsplit=1)
-    if len(name) > 1:
-        if 'args: ' in name[0] or 'pswd: ' in name[0]:
-            name = ''
+    try:
+        name_arg = mssg.split('|', maxsplit=1)
+        if 'args: ' in name_arg[0]:
+            raise IndexError
         else:
-            name = name[1]
-        if name != '':
-            name = re_split('pswd:|args:', name)[0]
-            name = name.strip()
-    else:
+            name = name_arg[1]
+        name = re_split(r' pswd: | args: ', name)[0]
+        name = name.strip()
+    except:
         name = ''
-
-    pswd = mssg.split(' pswd: ')
-    if len(pswd) > 1:
-        pswd = pswd[1]
+    try:
+        pswd = mssg.split(' pswd: ')[1]
         pswd = pswd.split(' args: ')[0]
-    else:
+    except:
         pswd = None
 
-    args = mssg.split(' args: ')
-    if len(args) > 1:
-        args = args[1]
-    else:
+    try:
+        args = mssg.split(' args: ')[1]
+    except:
         args = None
 
     if message.from_user.username:
@@ -65,7 +58,7 @@ def _ytdl(bot, message, isZip=False, isLeech=False, multi=0):
     reply_to = message.reply_to_message
     if reply_to is not None:
         if len(link) == 0:
-            link = reply_to.text.split(maxsplit=1)[0].strip()
+            link = reply_to.text.strip()
         if reply_to.from_user.username:
             tag = f"@{reply_to.from_user.username}"
         else:
@@ -80,10 +73,10 @@ def _ytdl(bot, message, isZip=False, isLeech=False, multi=0):
         help_msg += "\n\n<b>NOTE:</b> Add `^` before integer, some values must be integer and some string."
         help_msg += " Like playlist_items:10 works with string so no need to add `^` before the number"
         help_msg += " but playlistend works only with integer so you must add `^` before the number like example above."
-        help_msg += "\n\nCheck all arguments from this <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L174'>FILE</a>."
+        help_msg += "\n\nCheck all arguments from this <a href='https://github.com/yt-dlp/yt-dlp/blob/a3125791c7a5cdf2c8c025b99788bf686edd1a8a/yt_dlp/YoutubeDL.py#L194'>FILE</a>."
         return sendMessage(help_msg, bot, message)
 
-    listener = MirrorLeechListener(bot, message, isZip, isLeech=isLeech, pswd=pswd, tag=tag)
+    listener = MirrorListener(bot, message, isZip, isLeech=isLeech, pswd=pswd, tag=tag)
     buttons = button_build.ButtonMaker()
     best_video = "bv*+ba/b"
     best_audio = "ba/b"
@@ -158,13 +151,13 @@ def _ytdl(bot, message, isZip=False, isLeech=False, multi=0):
 
     Thread(target=_auto_cancel, args=(bmsg, msg_id)).start()
     if multi > 1:
-        sleep(4)
+        sleep(3)
         nextmsg = type('nextmsg', (object, ), {'chat_id': message.chat_id, 'message_id': message.reply_to_message.message_id + 1})
-        nextmsg = sendMessage(mssg, bot, nextmsg)
+        nextmsg = sendMessage(mssg.split(' ')[0], bot, nextmsg)
         nextmsg.from_user.id = message.from_user.id
         multi -= 1
-        sleep(4)
-        Thread(target=_ytdl, args=(bot, nextmsg, isZip, isLeech, multi)).start()
+        sleep(3)
+        Thread(target=_watch, args=(bot, nextmsg, isZip, isLeech, multi)).start()
 
 def _qual_subbuttons(task_id, qual, msg):
     buttons = button_build.ButtonMaker()
@@ -229,8 +222,7 @@ def select_format(update, context):
     elif data[2] == "dict":
         query.answer()
         qual = data[3]
-        _qual_subbuttons(task_id, qual, msg)
-        return
+        return _qual_subbuttons(task_id, qual, msg)
     elif data[2] == "back":
         query.answer()
         return editMessage('Choose Video Quality:', msg, task_info[4])
@@ -240,8 +232,7 @@ def select_format(update, context):
             playlist = True
         else:
             playlist = False
-        _audio_subbuttons(task_id, msg, playlist)
-        return
+        return _audio_subbuttons(task_id, msg, playlist)
     elif data[2] == "cancel":
         query.answer()
         editMessage('Task has been cancelled.', msg)
@@ -272,30 +263,30 @@ def _auto_cancel(msg, msg_id):
     except:
         pass
 
-def ytdl(update, context):
-    _ytdl(context.bot, update.message)
+def watch(update, context):
+    _watch(context.bot, update.message)
 
-def ytdlZip(update, context):
-    _ytdl(context.bot, update.message, True)
+def watchZip(update, context):
+    _watch(context.bot, update.message, True)
 
-def ytdlleech(update, context):
-    _ytdl(context.bot, update.message, isLeech=True)
+def leechWatch(update, context):
+    _watch(context.bot, update.message, isLeech=True)
 
-def ytdlZipleech(update, context):
-    _ytdl(context.bot, update.message, True, True)
+def leechWatchZip(update, context):
+    _watch(context.bot, update.message, True, True)
 
-ytdl_handler = CommandHandler(BotCommands.YtdlCommand, ytdl,
+watch_handler = CommandHandler(BotCommands.WatchCommand, watch,
                                 filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
-ytdl_zip_handler = CommandHandler(BotCommands.YtdlZipCommand, ytdlZip,
+zip_watch_handler = CommandHandler(BotCommands.ZipWatchCommand, watchZip,
                                     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
-ytdl_leech_handler = CommandHandler(BotCommands.YtdlLeechCommand, ytdlleech,
+leech_watch_handler = CommandHandler(BotCommands.LeechWatchCommand, leechWatch,
                                 filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
-ytdl_zip_leech_handler = CommandHandler(BotCommands.YtdlZipLeechCommand, ytdlZipleech,
+leech_zip_watch_handler = CommandHandler(BotCommands.LeechZipWatchCommand, leechWatchZip,
                                     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
 quality_handler = CallbackQueryHandler(select_format, pattern="qu", run_async=True)
 
-dispatcher.add_handler(ytdl_handler)
-dispatcher.add_handler(ytdl_zip_handler)
-dispatcher.add_handler(ytdl_leech_handler)
-dispatcher.add_handler(ytdl_zip_leech_handler)
+dispatcher.add_handler(watch_handler)
+dispatcher.add_handler(zip_watch_handler)
+dispatcher.add_handler(leech_watch_handler)
+dispatcher.add_handler(leech_zip_watch_handler)
 dispatcher.add_handler(quality_handler)

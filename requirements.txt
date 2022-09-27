@@ -1,10 +1,8 @@
 anytree
 appdirs
 aria2p
-asyncio
 attrdict
 beautifulsoup4
-bencoding
 cfscrape
 feedparser
 flask
@@ -14,6 +12,7 @@ google-auth-oauthlib
 gunicorn
 lk21
 lxml
+megasdkrestclient
 pillow
 psutil
 psycopg2-binary
@@ -24,6 +23,8 @@ python-magic
 python-telegram-bot
 qbittorrent-api
 requests
+six
+telegraph
 tenacity
 tgCrypto
 urllib3
