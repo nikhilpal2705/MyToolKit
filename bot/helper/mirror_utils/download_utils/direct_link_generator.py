@@ -457,3 +457,66 @@ def appdrive_dl(url: str) -> str:
     if info_parsed['error']:
         raise DirectDownloadLinkException(f"{info_parsed['error_message']}")
     return info_parsed["gdrive_link"]
+  
+  def udrive(url: str) -> str:
+    if 'katdrive' or 'hubdrive'  in url:
+      client = rsession()
+    else:
+      client = cloudscraper.create_scraper(delay=10, browser='chrome')
+
+    if 'hubdrive' in url:
+        if "hubdrive.in" in url:
+            url = url.replace(".in",".pro")
+        client.cookies.update({'crypt': HUBDRIVE_CRYPT})
+    if 'drivehub' in url:
+        client.cookies.update({'crypt': KATDRIVE_CRYPT})
+    if 'katdrive' in url:
+        client.cookies.update({'crypt': KATDRIVE_CRYPT})
+    if 'kolop' in url:
+        client.cookies.update({'crypt': KATDRIVE_CRYPT})
+    if 'drivefire' in url:
+        client.cookies.update({'crypt': DRIVEFIRE_CRYPT})
+    if 'drivebuzz' in url:
+        client.cookies.update({'crypt': DRIVEFIRE_CRYPT})
+
+    res = client.get(url)
+    info_parsed = parse_info(res, url)
+
+
+    info_parsed['error'] = False
+
+    up = urlparse(url)
+    req_url = f"{up.scheme}://{up.netloc}/ajax.php?ajax=download"
+
+    file_id = url.split('/')[-1]
+
+    data = { 'id': file_id }
+
+    headers = {
+        'x-requested-with': 'XMLHttpRequest'
+    }
+
+    try:
+        res = client.post(req_url, headers=headers, data=data).json()['file']
+    except: return {'error': True, 'src_url': url}
+
+    if 'drivefire' in url:
+        decoded_id = res.rsplit('/', 1)[-1]
+        flink = f"https://drive.google.com/file/d/{decoded_id}"
+        return flink
+    elif 'drivehub' in url:
+        gd_id = res.rsplit("=", 1)[-1]
+        flink = f"https://drive.google.com/open?id={gd_id}"
+        return flink
+    elif 'drivebuzz' in url:
+        gd_id = res.rsplit("=", 1)[-1]
+        flink = f"https://drive.google.com/open?id={gd_id}"
+        return flink
+    else:
+        gd_id = re_findall('gd=(.*)', res, re.DOTALL)[0]
+
+    info_parsed['gdrive_url'] = f"https://drive.google.com/open?id={gd_id}"
+    info_parsed['src_url'] = url
+    flink = info_parsed['gdrive_url']
+
+    return flink
