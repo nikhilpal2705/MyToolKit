@@ -1,11 +1,11 @@
 from os import remove as osremove, path as ospath, mkdir
+from sys import prefix
 from threading import Thread
 from PIL import Image
 from telegram.ext import CommandHandler, CallbackQueryHandler
-from telegram import InlineKeyboardMarkup
 
-from bot import AS_DOC_USERS, AS_MEDIA_USERS, dispatcher, AS_DOCUMENT, app, AUTO_DELETE_MESSAGE_DURATION, DB_URI
-from bot.helper.telegram_helper.message_utils import sendMessage, sendMarkup, editMessage, auto_delete_message
+from bot import AS_DOC_USERS, AS_MEDIA_USERS, dispatcher, AS_DOCUMENT, DB_URI, PRE_DICT, LEECH_DICT, PAID_USERS, CAP_DICT
+from bot.helper.telegram_helper.message_utils import sendMessage, sendMarkup, editMessage, sendPhoto
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper import button_build
@@ -17,6 +17,9 @@ def getleechinfo(from_user):
     name = from_user.full_name
     buttons = button_build.ButtonMaker()
     thumbpath = f"Thumbnails/{user_id}.jpg"
+    prefix = PRE_DICT.get(user_id, "Not Exists")
+    caption = CAP_DICT.get(user_id, "Not Exists")
+    dumpid = LEECH_DICT.get(user_id, "Not Exists")
     if (
         user_id in AS_DOC_USERS
         or user_id not in AS_MEDIA_USERS
@@ -27,21 +30,35 @@ def getleechinfo(from_user):
     else:
         ltype = "MEDIA"
         buttons.sbutton("Send As Document", f"leechset {user_id} doc")
+        
+    uplan = "Paid User" if user_id in PAID_USERS else "Normal User"
 
     if ospath.exists(thumbpath):
         thumbmsg = "Exists"
         buttons.sbutton("Delete Thumbnail", f"leechset {user_id} thumb")
+        buttons.sbutton("Show Thumbnail", f"leechset {user_id} showthumb")
     else:
         thumbmsg = "Not Exists"
 
-    if AUTO_DELETE_MESSAGE_DURATION == -1:
-        buttons.sbutton("Close", f"leechset {user_id} close")
+    if prefix != "Not Exists":
+        buttons.sbutton("Delete Prename", f"leechset {user_id} prename")
 
-    button = InlineKeyboardMarkup(buttons.build_menu(1))
+    if caption != "Not Exists": 
+        buttons.sbutton("Delete Caption", f"leechset {user_id} cap")
 
-    text = f"<u>Leech Settings for <a href='tg://user?id={user_id}'>{name}</a></u>\n"\
-           f"Leech Type <b>{ltype}</b>\n"\
-           f"Custom Thumbnail <b>{thumbmsg}</b>"
+    if dumpid != "Not Exists":
+        buttons.sbutton("Delete DumpID", f"leechset {user_id} dump")
+
+    button = buttons.build_menu(2)
+
+    text = f'''<u>Leech Settings for <a href='tg://user?id={user_id}'>{name}</a></u>
+    
+Leech Type <b>{ltype}</b>
+Custom Thumbnail <b>{thumbmsg}</b>
+PreName : <b>{prefix}</b>
+Caption : <b>{caption}</b>
+DumpID : <b>{dumpid}</b>
+User Plan : <b>{uplan}</b>'''
     return text, button
 
 def editLeechType(message, query):
@@ -51,14 +68,14 @@ def editLeechType(message, query):
 def leechSet(update, context):
     msg, button = getleechinfo(update.message.from_user)
     choose_msg = sendMarkup(msg, context.bot, update.message, button)
-    Thread(target=auto_delete_message, args=(context.bot, update.message, choose_msg)).start()
+    Thread(args=(context.bot, update.message, choose_msg)).start()
 
 def setLeechType(update, context):
     query = update.callback_query
     message = query.message
     user_id = query.from_user.id
     data = query.data
-    data = data.split(" ")
+    data = data.split()
     if user_id != int(data[1]):
         query.answer(text="Not Yours!", show_alert=True)
     elif data[2] == "doc":
@@ -77,6 +94,7 @@ def setLeechType(update, context):
             DbManger().user_media(user_id)
         query.answer(text="Your File Will Deliver As Media!", show_alert=True)
         editLeechType(message, query)
+
     elif data[2] == "thumb":
         path = f"Thumbnails/{user_id}.jpg"
         if ospath.lexists(path):
@@ -87,6 +105,31 @@ def setLeechType(update, context):
             editLeechType(message, query)
         else:
             query.answer(text="Old Settings", show_alert=True)
+    elif data[2] == "showthumb":
+        path = f"Thumbnails/{user_id}.jpg"
+        if ospath.lexists(path):
+            msg = f"Thumbnail for: {query.from_user.mention_html()} (<code>{str(user_id)}</code>)"
+            delo = sendPhoto(text=msg, bot=context.bot, message=message, photo=open(path, 'rb'))
+            Thread(args=(context.bot, update.message, delo)).start()
+        else: query.answer(text="Send new settings command.")
+    elif data[2] == "prename":
+        PRE_DICT.pop(user_id)
+        if DB_URI: 
+            DbManger().user_pre(user_id, '')
+        query.answer(text="Your Prename is Successfully Deleted!", show_alert=True)
+        editLeechType(message, query)
+    elif data[2] == "cap":
+        CAP_DICT.pop(user_id)
+        if DB_URI:
+            DbManger().user_cap(user_id, None)
+        query.answer(text="Your Caption is Successfully Deleted!", show_alert=True)
+        editLeechType(message, query)
+    elif data[2] == "dump":
+        LEECH_DICT.pop(user_id)
+        if DB_URI:
+            DbManger().user_dump(user_id, None)
+        query.answer(text="Your Dump ID is Successfully Deleted!", show_alert=True)
+        editLeechType(message, query)
     else:
         query.answer()
         try:
@@ -102,9 +145,8 @@ def setThumb(update, context):
         path = "Thumbnails/"
         if not ospath.isdir(path):
             mkdir(path)
-        photo_msg = app.get_messages(update.message.chat.id, reply_to_message_ids=update.message.message_id)
-        photo_dir = app.download_media(photo_msg, file_name=path)
-        des_dir = ospath.join(path, str(user_id) + ".jpg")
+        photo_dir = reply_to.photo[-1].get_file().download()
+        des_dir = ospath.join(path, f'{user_id}.jpg')
         Image.open(photo_dir).convert("RGB").save(des_dir, "JPEG")
         osremove(photo_dir)
         if DB_URI is not None:
@@ -121,4 +163,3 @@ but_set_handler = CallbackQueryHandler(setLeechType, pattern="leechset", run_asy
 dispatcher.add_handler(leech_set_handler)
 dispatcher.add_handler(but_set_handler)
 dispatcher.add_handler(set_thumbnail_handler)
-

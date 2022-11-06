@@ -7,7 +7,7 @@ from time import sleep
 from telegraph import Telegraph
 from telegraph.exceptions import RetryAfterError
 
-from bot import LOGGER
+from bot import LOGGER, AUTHOR_NAME, AUTHOR_URL, TITLE_NAME
 
 
 class TelegraphHelper:
@@ -26,7 +26,7 @@ class TelegraphHelper:
             author_url=self.author_url
         )
         self.access_token = self.telegraph.get_access_token()
-        LOGGER.info(f"Creating TELEGRAPH Account using  '{self.short_name}' name")
+        LOGGER.info("Creating Telegraph Account")
 
     def create_page(self, title, content):
         try:
@@ -61,21 +61,21 @@ class TelegraphHelper:
         num_of_path = len(path)
         for content in telegraph_content :
             if nxt_page == 1 :
-                content += f'<b><a href="https://telegra.ph/{path[nxt_page]}">Next</a></b>'
+                content += f'<b><a href="https://graph.org/{path[nxt_page]}">Next</a></b>'
                 nxt_page += 1
             else :
                 if prev_page <= num_of_path:
-                    content += f'<b><a href="https://telegra.ph/{path[prev_page]}">Prev</a></b>'
+                    content += f'<b><a href="https://graph.org/{path[prev_page]}">Prev</a></b>'
                     prev_page += 1
                 if nxt_page < num_of_path:
-                    content += f'<b> | <a href="https://telegra.ph/{path[nxt_page]}">Next</a></b>'
+                    content += f'<b> | <a href="https://graph.org/{path[nxt_page]}">Next</a></b>'
                     nxt_page += 1
             self.edit_page(
                 path = path[prev_page],
-                title = 'Mirror-leech-bot Torrent Search',
+                title = f"{TITLE_NAME} Torrent Search",
                 content=content
             )
         return
 
 
-telegraph=TelegraphHelper('Mirror-Leech-Telegram-Bot', 'https://github.com/anasty17/mirror-leech-telegram-bot')
+telegraph=TelegraphHelper(f'{AUTHOR_NAME}', f'{AUTHOR_URL}')

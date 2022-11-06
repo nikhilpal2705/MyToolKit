@@ -1,11 +1,10 @@
 from feedparser import parse as feedparse
 from time import sleep
 from telegram.ext import CommandHandler, CallbackQueryHandler
-from telegram import InlineKeyboardMarkup
 from threading import Lock, Thread
 
 from bot import dispatcher, job_queue, rss_dict, LOGGER, DB_URI, RSS_DELAY, RSS_CHAT_ID, RSS_COMMAND, AUTO_DELETE_MESSAGE_DURATION
-from bot.helper.telegram_helper.message_utils import sendMessage, editMessage, sendRss, sendMarkup, auto_delete_message
+from bot.helper.telegram_helper.message_utils import sendMessage, editMessage, sendMarkup, auto_delete_message, sendRss
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.ext_utils.db_handler import DbManger
@@ -24,9 +23,8 @@ def rss_list(update, context):
 
 def rss_get(update, context):
     try:
-        args = update.message.text.split(" ")
-        title = args[1]
-        count = int(args[2])
+        title = context.args[0]
+        count = int(context.args[1])
         feed_url = rss_dict.get(title)
         if feed_url is not None and count > 0:
             try:
@@ -54,12 +52,13 @@ def rss_get(update, context):
 
 def rss_sub(update, context):
     try:
-        args = update.message.text.split(" ", 3)
-        title = str(args[1])
-        feed_link = str(args[2])
+        args = update.message.text.split(maxsplit=3)
+        title = args[1].strip()
+        feed_link = args[2].strip()
         f_lists = []
-        try:
-            filters = str(args[3]).lower()
+
+        if len(args) == 4:
+            filters = args[3].lstrip().lower()
             if filters.startswith('f: '):
                 filters = filters.split('f: ', 1)[1]
                 filters_list = filters.split('|')
@@ -68,8 +67,9 @@ def rss_sub(update, context):
                    f_lists.append(y)
             else:
                 filters = None
-        except:
+        else:
             filters = None
+
         exists = rss_dict.get(title)
         if exists is not None:
             LOGGER.error("This title already subscribed! Choose another title!")
@@ -120,8 +120,7 @@ def rss_sub(update, context):
 
 def rss_unsub(update, context):
     try:
-        args = update.message.text.split(" ")
-        title = str(args[1])
+        title = context.args[0]
         exists = rss_dict.get(title)
         if exists is None:
             msg = "Rss link not exists! Nothing removed!"
@@ -145,7 +144,7 @@ def rss_settings(update, context):
         buttons.sbutton("Start", "rss start")
     if AUTO_DELETE_MESSAGE_DURATION == -1:
         buttons.sbutton("Close", f"rss close")
-    button = InlineKeyboardMarkup(buttons.build_menu(1))
+    button = buttons.build_menu(1)
     setting = sendMarkup('Rss Settings', context.bot, update.message, button)
     Thread(target=auto_delete_message, args=(context.bot, update.message, setting)).start()
 
@@ -154,7 +153,7 @@ def rss_set_update(update, context):
     user_id = query.from_user.id
     msg = query.message
     data = query.data
-    data = data.split(" ")
+    data = data.split()
     if not CustomFilters._owner_query(user_id):
         query.answer(text="You don't have permission to use these buttons!", show_alert=True)
     elif data[1] == 'unsuball':
